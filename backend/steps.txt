@@ -1,0 +1,10 @@
+run 
+.\venv\Scripts\Activate.ps1 
+to activate the virtual env
+
+deactivate
+to stop virtual env
+
+run 
+fastapi dev main.py
+to run server
