@@ -2,7 +2,7 @@
 # Backend (FastAPI / Python)
 # =========================
 
-# Virtual Environments (This is the big one!)
+# Virtual Environments 
 venv/
 env/
 .venv/
@@ -12,14 +12,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Local database files (if you use SQLite later)
-*.sqlite3
-
 # =========================
 # Frontend (React / Node)
 # =========================
 
-# Node Modules (Never upload this, it's massive)
+# Node Modules
 node_modules/
 
 # Production build folders
@@ -35,7 +32,7 @@ yarn-error.log*
 # General / Security
 # =========================
 
-# Environment variables (NEVER upload your secrets/passwords)
+# Environment variables
 .env
 .env.local
 
@@ -43,6 +40,6 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# IDE / Editor folders (Keeps your repo clean for other developers)
+# IDE / Editor folders
 .vscode/
 .idea/
