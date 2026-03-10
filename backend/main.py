@@ -1,21 +1,32 @@
+# backend/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+# 1. Import BOTH of your new router files
+from backend.routers import tournaments, pokemon, chat
+from database import engine, Base
 
-# Allow your React app to communicate with this backend
+# Optional: Ensure tables exist
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="Limitless VGC API", version="1.1.0") # Bumped version for the massive update!
+
+# --- CORS Middleware ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"], # Vite's default local port
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# --- ROUTER REGISTRATION ---
+# 2. Mount the routers strictly to "/api" 
+# This allows the routers themselves to handle the sub-paths (/encyclopedia, /synergy, /players, etc.)
+app.include_router(tournaments.router, prefix="/api")
+app.include_router(pokemon.router, prefix="/api")
+app.include_router(chat.router, prefix="/api")
+
 @app.get("/")
 def read_root():
-    return {"status": "Server is running"}
-
-@app.get("/api/data")
-def get_data():
-    return {"message": "FastAPI is connected and talking to React!"}
+    return {"status": "online", "message": "VGC Database API is running with Advanced Synergy!"}

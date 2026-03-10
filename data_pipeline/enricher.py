@@ -2,12 +2,12 @@ import logging
 import time
 import requests
 import re
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
 
 # Import your database configuration and models
 from config import Config
-from database import Base, Move, Item, Ability
+from database import Base, Move, Item, Ability, SessionLocal, engine
 
 # --- LOGGING SETUP ---
 logging.basicConfig(
@@ -15,10 +15,6 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
-# --- DATABASE SETUP ---
-engine = create_engine(Config.SQLALCHEMY_DATABASE_URI, echo=False)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def slugify_for_pokeapi(name):
     """
@@ -34,25 +30,42 @@ def slugify_for_pokeapi(name):
     
     # Handle specific PokeAPI edge cases manually if needed
     overrides = {
+        "sword-dance": "swords-dance",     # Fix Limitless typo
+        "roar-of-time": "roar-of-time",
         "as-one-glastrier": "as-one",
         "as-one-spectrier": "as-one",
-        "protect": "protect" # Just ensuring standard moves work
     }
     return overrides.get(name, name)
 
-def extract_english_flavor_text(entries):
-    """Finds the first English description and cleans up the weird newline characters."""
-    for entry in entries:
+def extract_competitive_effect(data):
+    """
+    Tries to find the hard mechanical description in 'effect_entries' first.
+    If the item/move is too new (Gen 9), falls back to 'flavor_text_entries'.
+    Returns "NA" if neither exists, enabling a Retry Queue.
+    """
+    # 1. First Priority: The hard mechanical effect
+    for entry in data.get('effect_entries', []):
         if entry.get('language', {}).get('name') == 'en':
-            text = entry.get('flavor_text', '')
-            # PokeAPI flavor text is notorious for random \n and \f characters
-            return text.replace('\n', ' ').replace('\f', ' ').strip()
-    return "Description not found."
+            effect = entry.get('short_effect') or entry.get('effect')
+            if effect:
+                # Clean up weird PokeAPI newlines
+                return effect.replace('\n', ' ').replace('\f', ' ').strip()
+                
+    # 2. Second Priority: The Gen 9 Fallback (In-game text)
+    for entry in data.get('flavor_text_entries', []):
+        if entry.get('language', {}).get('name') == 'en':
+            text = entry.get('flavor_text')
+            if text:
+                return text.replace('\n', ' ').replace('\f', ' ').strip()
+                
+    # 3. Third Priority: Mark as "NA" for future retries
+    return "NA"
 
 def enrich_moves(session):
-    # Find all moves that haven't been enriched yet (assuming type is None if unenriched)
-    # If your database model uses 'description' instead of 'type' to track this, change the filter!
-    unenriched_moves = session.query(Move).filter(Move.type == None).all()
+    # Find all moves that haven't been enriched yet OR failed previously (marked "NA")
+    unenriched_moves = session.query(Move).filter(
+        or_(Move.type == None, Move.description == "NA")
+    ).all()
     logger.info(f"Found {len(unenriched_moves)} Moves to enrich...")
     
     for move in unenriched_moves:
@@ -69,7 +82,7 @@ def enrich_moves(session):
                 move.category = data['damage_class']['name'].capitalize()
                 move.base_power = data.get('power') or 0
                 move.accuracy = data.get('accuracy') or 0
-                move.description = extract_english_flavor_text(data.get('flavor_text_entries', []))
+                move.description = extract_competitive_effect(data)
                 
                 logger.info(f"✅ Enriched Move: {move.name}")
             else:
@@ -83,7 +96,10 @@ def enrich_moves(session):
     session.commit()
 
 def enrich_items(session):
-    unenriched_items = session.query(Item).filter(Item.description == None).all()
+    # Find items missing descriptions OR marked for retry ("NA")
+    unenriched_items = session.query(Item).filter(
+        or_(Item.description == None, Item.description == "NA")
+    ).all()
     logger.info(f"Found {len(unenriched_items)} Items to enrich...")
     
     for item in unenriched_items:
@@ -94,7 +110,7 @@ def enrich_items(session):
             res = requests.get(url)
             if res.status_code == 200:
                 data = res.json()
-                item.description = extract_english_flavor_text(data.get('flavor_text_entries', []))
+                item.description = extract_competitive_effect(data)
                 logger.info(f"✅ Enriched Item: {item.name}")
             else:
                 logger.warning(f"❌ PokeAPI 404: Could not find Item '{slug}'")
@@ -107,7 +123,10 @@ def enrich_items(session):
     session.commit()
 
 def enrich_abilities(session):
-    unenriched_abilities = session.query(Ability).filter(Ability.description == None).all()
+    # Find abilities missing descriptions OR marked for retry ("NA")
+    unenriched_abilities = session.query(Ability).filter(
+        or_(Ability.description == None, Ability.description == "NA")
+    ).all()
     logger.info(f"Found {len(unenriched_abilities)} Abilities to enrich...")
     
     for ability in unenriched_abilities:
@@ -118,7 +137,7 @@ def enrich_abilities(session):
             res = requests.get(url)
             if res.status_code == 200:
                 data = res.json()
-                ability.description = extract_english_flavor_text(data.get('flavor_text_entries', []))
+                ability.description = extract_competitive_effect(data)
                 logger.info(f"✅ Enriched Ability: {ability.name}")
             else:
                 logger.warning(f"❌ PokeAPI 404: Could not find Ability '{slug}'")
@@ -146,4 +165,6 @@ def run_enrichment_pipeline():
         session.close()
 
 if __name__ == "__main__":
+    # Ensure tables exist before seeding
+    Base.metadata.create_all(bind=engine)
     run_enrichment_pipeline()

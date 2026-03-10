@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 # Import your custom modules
 from config import Config
-from scraper import VGCScraper
+from data_pipeline.scraper import VGCScraper
 from database import (
     Base, Species, Move, Item, Ability, Format, Tournament, 
     Player, Team, TournamentResult, TeamPokemon, TeamPokemonMove, TournamentMetagameStat
@@ -100,7 +100,7 @@ def run_vgc_pipeline():
     # ---------------------------------------------------------
     # LEVEL 2, 3 & 4: DEEP TOURNAMENT PROCESSING
     # ---------------------------------------------------------
-    for tourney in valid_tournaments: 
+    for tourney in valid_tournaments[:100]: 
         t_id = tourney['tournament_id']
         t_name = tourney['name']
         

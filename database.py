@@ -1,6 +1,23 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Boolean, CheckConstraint
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, CheckConstraint, create_engine
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 
+from config import Config
+
+# --- 1. THE CONNECTION SETUP ---
+engine = create_engine(Config.SQLALCHEMY_DATABASE_URI, echo=False)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+def get_db():
+    """
+    Creates a new database session for a single request and closes it when the request is finished.
+    """
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# --- 2. THE BASE MODEL ---
 Base = declarative_base()
 
 # =====================================================================
@@ -41,6 +58,7 @@ class Move(Base):
     name = Column(String(100), unique=True, nullable=False)
     type = Column(String(20)) # e.g., "Fairy"
     category = Column(String(20)) # "Physical", "Special", "Status"
+    description = Column(String(500), nullable=True)
     base_power = Column(Integer, nullable=True)
     accuracy = Column(Integer, nullable=True)
 
@@ -128,6 +146,8 @@ class TeamPokemon(Base):
     ability_id = Column(Integer, ForeignKey('abilities.id'), nullable=True) 
     tera_type = Column(String(20), nullable=True)
     
+    item = relationship("Item")
+    ability = relationship("Ability")
     team = relationship("Team", back_populates="pokemons")
     species = relationship("Species", back_populates="team_appearances")
     
@@ -142,6 +162,7 @@ class TeamPokemonMove(Base):
     slot = Column(Integer, CheckConstraint('slot >= 1 AND slot <= 4'), nullable=False)
     
     pokemon = relationship("TeamPokemon", back_populates="moves")
+    move = relationship("Move")
 
 class TournamentMetagameStat(Base):
     """The overall usage metrics (e.g. Incineroar was on 50% of teams at EUIC)."""

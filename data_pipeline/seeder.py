@@ -2,18 +2,13 @@ import os
 import requests
 import time
 import logging
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from config import Config
-from database import Base, Species
+from database import Base, Species, SessionLocal, engine
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
-# --- DATABASE SETUP ---
-engine = create_engine(Config.SQLALCHEMY_DATABASE_URI, echo=False)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # --- TRANSLATION DICTIONARY ---
 SLUG_OVERRIDES = {}
@@ -54,12 +49,12 @@ def run_seeder():
     logger.info("=== STARTING POKEAPI DATABASE SEEDER ===")
     
     # Load text file corrections from failed_slugs.txt
-    file_overrides = load_corrections_from_file("corrections.txt")
+    file_overrides = load_corrections_from_file("data_pipeline/corrections.txt")
     SLUG_OVERRIDES.update(file_overrides) 
     # ---------------------------------------------
     
     # Initialize our failure log for the NEW run
-    with open("failed_slugs.txt", "w") as f:
+    with open("data_pipeline/failed_slugs.txt", "w") as f:
         f.write("--- Failed Limitless Translations ---\n")
     url = "https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0"
     response = requests.get(url)
@@ -95,7 +90,7 @@ def run_seeder():
             if verify_res.status_code == 404:
                 logger.warning(f"❌ 404 Not Found: Limitless rejects '{limitless_id}' (PokeAPI: '{pokeapi_slug}')")
                 # Log it to our text file for manual review later
-                with open("failed_slugs.txt", "a") as f:
+                with open("data_pipeline/failed_slugs.txt", "a") as f:
                     f.write(f"PokeAPI: {pokeapi_slug} -> Limitless ID: {limitless_id}\n")
                 
                 # Polite delay before skipping to the next Pokemon
