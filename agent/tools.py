@@ -138,7 +138,8 @@ def get_tournament_teams(tournament_id: str) -> list:
     try:
         response = requests.get(f"{BASE_URL}/tournaments/{tournament_id}/teams")
         response.raise_for_status()
-        return response.json()
+        data = response.json()
+        return data[:25]
     except Exception as e:
         return [{"error": str(e)}]
 

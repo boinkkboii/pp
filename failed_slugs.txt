@@ -1,4 +1,0 @@
---- Failed Limitless Translations ---
-PokeAPI: deoxys-normal -> Limitless ID: deoxys-normal
-PokeAPI: wormadam-plant -> Limitless ID: wormadam-plant
-PokeAPI: giratina-altered -> Limitless ID: giratina-altered

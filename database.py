@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, CheckConstraint, create_engine
+from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey, CheckConstraint, create_engine
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -93,7 +93,7 @@ class Tournament(Base):
     id = Column(Integer, primary_key=True)
     limitless_id = Column(String(100), unique=True, nullable=False) # e.g., "420"
     name = Column(String(255), nullable=False)
-    date = Column(String(50))
+    date = Column(Date)
     country_code = Column(String(10))
     players_count = Column(Integer)
     

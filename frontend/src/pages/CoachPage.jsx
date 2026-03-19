@@ -3,6 +3,7 @@ import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import '../App.css'
 import Dashboard from '../components/Dashboard/SynergyChart'
+import { api } from '../services/api'; // <-- IMPORTING THE API SERVICE
 
 function CoachPage() {
   const [input, setInput] = useState('');
@@ -10,7 +11,7 @@ function CoachPage() {
     { role: 'ai', content: "Hello! I am your VGC Coach. What team are we building today?" }
   ]);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeCommand, setActiveCommand] = useState(null); // <-- Added state for the chart
+  const [activeCommands, setActiveCommands] = useState([]);
 
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -22,29 +23,22 @@ function CoachPage() {
     setIsLoading(true);
 
     try {
-      const res = await fetch('http://localhost:8000/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: input })
-      });
-      
-      if (!res.ok) throw new Error("API Network Error");
-      
-      const data = await res.json();
+      // THE REFACTOR: One clean line replaces the entire fetch block!
+      const data = await api.sendChatMessage(input);
       let aiText = data.response;
 
-      // --- THE INTERCEPTOR ---
-      // Catches hidden tags like [CHART_META: 7274]
-      const commandRegex = /\[(CHART_(?:META|SYNERGY):\s*[^\]]+)\]/;
-      const match = aiText.match(commandRegex);
+      const commandRegex = /\[(CHART_(?:META|SYNERGY):\s*[^\]]+)\]/g;
+      const matches = [...aiText.matchAll(commandRegex)];
       
-      if (match) {
-        setActiveCommand(match[1]); // Save the command for the Dashboard
-        aiText = aiText.replace(commandRegex, '').trim(); // Remove the tag from the chat bubble
+      if (matches.length > 0) {
+        const commands = matches.map(match => match[1]);
+        setActiveCommands(commands);
+        aiText = aiText.replace(commandRegex, '').trim(); 
       }
 
       setMessages([...newMessages, { role: 'ai', content: aiText }]);
     } catch (error) {
+      console.error(error); // Always good to log the actual error to the console!
       setMessages([...newMessages, { role: 'ai', content: "Error connecting to backend." }]);
     } finally {
       setIsLoading(false);
@@ -92,9 +86,20 @@ function CoachPage() {
         <div className="dashboard-header">
           <h2>Data Dashboard</h2>
         </div>
-        <div className="dashboard-content">
-          {/* Render the Dashboard and pass the active command down */}
-          <Dashboard chartCommand={activeCommand} />
+        <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          
+          {activeCommands.length === 0 ? (
+            <div className="placeholder-card">
+              <p>Ask the AI about a tournament meta or a Pokémon's synergy to populate the dashboard!</p>
+            </div>
+          ) : (
+            // Render a separate chart for every command the AI generated!
+            activeCommands.map((cmd, index) => (
+              <div key={index} style={{ height: '400px', backgroundColor: 'white', padding: '15px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                <Dashboard chartCommand={cmd} />
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

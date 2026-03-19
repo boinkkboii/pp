@@ -4,6 +4,8 @@ import requests
 import re
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
+from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
+from requests.exceptions import RequestException
 
 # Import your database configuration and models
 from config import Config
@@ -48,7 +50,6 @@ def extract_competitive_effect(data):
         if entry.get('language', {}).get('name') == 'en':
             effect = entry.get('short_effect') or entry.get('effect')
             if effect:
-                # Clean up weird PokeAPI newlines
                 return effect.replace('\n', ' ').replace('\f', ' ').strip()
                 
     # 2. Second Priority: The Gen 9 Fallback (In-game text)
@@ -58,11 +59,25 @@ def extract_competitive_effect(data):
             if text:
                 return text.replace('\n', ' ').replace('\f', ' ').strip()
                 
-    # 3. Third Priority: Mark as "NA" for future retries
     return "NA"
 
+# ====================================================================
+# ISOLATED RETRY LOGIC
+# ====================================================================
+@retry(
+    wait=wait_exponential(multiplier=1, min=2, max=10), 
+    stop=stop_after_attempt(5),
+    retry=retry_if_exception_type(RequestException)
+)
+def fetch_pokeapi_enrichment(url):
+    res = requests.get(url, timeout=10)
+    res.raise_for_status() 
+    return res.json()
+
+# ====================================================================
+# ENRICHMENT PIPELINE
+# ====================================================================
 def enrich_moves(session):
-    # Find all moves that haven't been enriched yet OR failed previously (marked "NA")
     unenriched_moves = session.query(Move).filter(
         or_(Move.type == None, Move.description == "NA")
     ).all()
@@ -73,30 +88,32 @@ def enrich_moves(session):
         url = f"https://pokeapi.co/api/v2/move/{slug}/"
         
         try:
-            res = requests.get(url)
-            if res.status_code == 200:
-                data = res.json()
-                
-                # Update the database object
-                move.type = data['type']['name'].capitalize()
-                move.category = data['damage_class']['name'].capitalize()
-                move.base_power = data.get('power') or 0
-                move.accuracy = data.get('accuracy') or 0
-                move.description = extract_competitive_effect(data)
-                
-                logger.info(f"✅ Enriched Move: {move.name}")
-            else:
-                logger.warning(f"❌ PokeAPI 404: Could not find Move '{slug}' (Original: {move.name})")
-                
-        except Exception as e:
-            logger.error(f"Error processing move {move.name}: {e}")
+            data = fetch_pokeapi_enrichment(url)
             
-        time.sleep(0.5) # Polite rate limiting
+            # Update the database object
+            move.type = data['type']['name'].capitalize()
+            move.category = data['damage_class']['name'].capitalize()
+            move.base_power = data.get('power') or 0
+            move.accuracy = data.get('accuracy') or 0
+            move.description = extract_competitive_effect(data)
+            
+            logger.info(f"✅ Enriched Move: {move.name}")
+            
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 404:
+                logger.warning(f"❌ PokeAPI 404: Could not find Move '{slug}' (Original: {move.name})")
+            else:
+                logger.error(f"HTTP Error processing move {move.name}: {e}")
+        except RequestException as e:
+            logger.error(f"Network failure for move {move.name} after retries: {e}")
+        except Exception as e:
+            logger.error(f"Logic Error processing move {move.name}: {e}")
+            
+        time.sleep(0.5) 
     
     session.commit()
 
 def enrich_items(session):
-    # Find items missing descriptions OR marked for retry ("NA")
     unenriched_items = session.query(Item).filter(
         or_(Item.description == None, Item.description == "NA")
     ).all()
@@ -107,23 +124,25 @@ def enrich_items(session):
         url = f"https://pokeapi.co/api/v2/item/{slug}/"
         
         try:
-            res = requests.get(url)
-            if res.status_code == 200:
-                data = res.json()
-                item.description = extract_competitive_effect(data)
-                logger.info(f"✅ Enriched Item: {item.name}")
-            else:
+            data = fetch_pokeapi_enrichment(url)
+            item.description = extract_competitive_effect(data)
+            logger.info(f"✅ Enriched Item: {item.name}")
+            
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 404:
                 logger.warning(f"❌ PokeAPI 404: Could not find Item '{slug}'")
-                
+            else:
+                logger.error(f"HTTP Error processing item {item.name}: {e}")
+        except RequestException as e:
+            logger.error(f"Network failure for item {item.name} after retries: {e}")
         except Exception as e:
-            logger.error(f"Error processing item {item.name}: {e}")
+            logger.error(f"Logic Error processing item {item.name}: {e}")
             
         time.sleep(0.5)
         
     session.commit()
 
 def enrich_abilities(session):
-    # Find abilities missing descriptions OR marked for retry ("NA")
     unenriched_abilities = session.query(Ability).filter(
         or_(Ability.description == None, Ability.description == "NA")
     ).all()
@@ -134,16 +153,19 @@ def enrich_abilities(session):
         url = f"https://pokeapi.co/api/v2/ability/{slug}/"
         
         try:
-            res = requests.get(url)
-            if res.status_code == 200:
-                data = res.json()
-                ability.description = extract_competitive_effect(data)
-                logger.info(f"✅ Enriched Ability: {ability.name}")
-            else:
+            data = fetch_pokeapi_enrichment(url)
+            ability.description = extract_competitive_effect(data)
+            logger.info(f"✅ Enriched Ability: {ability.name}")
+            
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 404:
                 logger.warning(f"❌ PokeAPI 404: Could not find Ability '{slug}'")
-                
+            else:
+                logger.error(f"HTTP Error processing ability {ability.name}: {e}")
+        except RequestException as e:
+            logger.error(f"Network failure for ability {ability.name} after retries: {e}")
         except Exception as e:
-            logger.error(f"Error processing ability {ability.name}: {e}")
+            logger.error(f"Logic Error processing ability {ability.name}: {e}")
             
         time.sleep(0.5)
         
@@ -165,6 +187,4 @@ def run_enrichment_pipeline():
         session.close()
 
 if __name__ == "__main__":
-    # Ensure tables exist before seeding
-    Base.metadata.create_all(bind=engine)
     run_enrichment_pipeline()

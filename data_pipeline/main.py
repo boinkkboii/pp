@@ -63,7 +63,6 @@ def get_or_create_species(session, limitless_id, fallback_name):
 
 def run_vgc_pipeline():
     logger.info("Initializing Database Schema...")
-    Base.metadata.create_all(bind=engine)
     session = SessionLocal()
     scraper = VGCScraper()
     
@@ -100,7 +99,7 @@ def run_vgc_pipeline():
     # ---------------------------------------------------------
     # LEVEL 2, 3 & 4: DEEP TOURNAMENT PROCESSING
     # ---------------------------------------------------------
-    for tourney in valid_tournaments[:100]: 
+    for tourney in valid_tournaments[:150]: 
         t_id = tourney['tournament_id']
         t_name = tourney['name']
         

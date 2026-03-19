@@ -6,15 +6,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.routers import tournaments, pokemon, chat
 from database import engine, Base
 
-# Optional: Ensure tables exist
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(title="Limitless VGC API", version="1.1.0") # Bumped version for the massive update!
 
 # --- CORS Middleware ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["http://localhost:5173", "http://localhost:3000"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

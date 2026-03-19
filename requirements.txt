@@ -1,5 +1,6 @@
 # run pip install -r requirements.txt
 
+tenacity
 fastapi
 google-genai
 requests==2.31.0
