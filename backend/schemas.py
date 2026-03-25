@@ -1,5 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
+from datetime import date
 
 # --- FORMAT SCHEMAS ---
 class FormatBase(BaseModel):
@@ -10,12 +11,29 @@ class FormatBase(BaseModel):
     class Config:
         from_attributes = True
 
+# --- DAMAGE CALC ---
+class DamageCalcRequest(BaseModel):
+    """The JSON schema the AI must fill out to calculate damage."""
+    attacker_name: str = Field(description="Name of attacking Pokemon, e.g., 'Ursaluna'")
+    defender_name: str = Field(description="Name of defending Pokemon, e.g., 'Amoonguss'")
+    move_name: str = Field(description="Name of the attack, e.g., 'Facade'")
+    
+    attacker_item: Optional[str] = Field(default=None, description="e.g., 'Flame Orb'")
+    attacker_ability: Optional[str] = Field(default=None, description="e.g., 'Guts'")
+    attacker_status: Optional[str] = Field(default="", description="Strictly use: 'brn', 'par', 'psn', 'slp', 'frz' or empty")
+    
+    defender_item: Optional[str] = Field(default=None)
+    defender_ability: Optional[str] = Field(default=None)
+    
+    has_reflect: bool = Field(default=False)
+    has_light_screen: bool = Field(default=False)
+
 # --- TOURNAMENT SCHEMAS ---
 class TournamentBase(BaseModel):
     id: int
     limitless_id: str
     name: str
-    date: Optional[str] = None
+    date: date
     country_code: Optional[str] = None
     players_count: Optional[int] = None
     format: Optional[FormatBase] = None
@@ -47,6 +65,7 @@ class AbilityBase(BaseModel):
 class SpeciesBase(BaseModel):
     id: int
     name: str
+    limitless_id: str | None = None
     type_1: str
     type_2: Optional[str] = None
     base_spe: int # Just pulling Speed for the frontend, but you can add the rest!

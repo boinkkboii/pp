@@ -32,9 +32,19 @@ export const api = {
     }),
 
   // --- Tournaments ---
-  getAllTournaments: () => 
-    fetchWithConfig('/tournaments/'),
+  getAllTournaments: (filters = {}) => {
+    const params = new URLSearchParams();
+    if (filters.format) params.append('format', filters.format);
     
+    // Check for our new time filter
+    if (filters.time) params.append('time_frame', filters.time); 
+    
+    const queryString = params.toString();
+    const endpoint = queryString ? `/tournaments/?${queryString}` : '/tournaments/';
+    
+    return fetchWithConfig(endpoint);
+  },
+  
   getTournamentInfo: (id) => 
     fetchWithConfig(`/tournaments/${id}`),
     
@@ -43,5 +53,14 @@ export const api = {
 
   // --- Synergy ---
   getBestTeammates: (pokemonName) => 
-    fetchWithConfig(`/synergy/${pokemonName}/teammates`)
+    fetchWithConfig(`/synergy/${pokemonName}/teammates`),
+  
+  // --- Formats ---
+  getAllFormats: () =>
+    fetchWithConfig('/formats/'),
+
+  // --- Meta & Synergy ---
+  getLatestMeta: () => {
+    return fetchWithConfig('/meta/latest');
+  },
 };

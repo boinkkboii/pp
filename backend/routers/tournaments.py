@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
@@ -33,9 +33,32 @@ def read_historical_meta(months: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="No historical data found for that timeframe")
     return meta
 
+@router.get("/meta/latest", response_model=List[schemas.TournamentMetagameStatBase])
+def read_latest_meta(db: Session = Depends(get_db)):
+    """Returns the top Pokémon for the homepage dashboard."""
+    stats = crud.get_latest_meta(db)
+    if not stats:
+        raise HTTPException(status_code=404, detail="No latest meta found")
+    return stats
+
+# ==========================================
+# UPDATED: The filtered Tournaments endpoint
+# ==========================================
 @router.get("/tournaments/", response_model=List[schemas.Tournament])
-def read_tournaments(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    tournaments = crud.get_tournaments(db, skip=skip, limit=limit)
+def read_tournaments(
+    skip: int = 0, 
+    limit: int = 100, 
+    format: Optional[str] = None, 
+    time_frame: Optional[str] = None, 
+    db: Session = Depends(get_db)
+):
+    tournaments = crud.get_tournaments(
+        db, 
+        skip=skip, 
+        limit=limit, 
+        format_name=format, 
+        time_frame=time_frame
+    )
     return tournaments
 
 @router.get("/tournaments/{tournament_id}", response_model=schemas.Tournament)
@@ -48,10 +71,7 @@ def read_single_tournament(tournament_id: str, db: Session = Depends(get_db)):
 @router.get("/tournaments/{tournament_id}/teams", response_model=List[schemas.TournamentResultBase])
 def read_tournament_teams(tournament_id: str, db: Session = Depends(get_db)):
     """Returns the standings, players, and full teams for a specific tournament."""
-    results = crud.get_tournament_results(db, limitless_tournament_id=tournament_id)
-    if not results:
-        raise HTTPException(status_code=404, detail="No teams found for this tournament")
-    return results
+    results = crud.get_
 
 @router.get("/tournaments/{tournament_id}/meta", response_model=List[schemas.TournamentMetagameStatBase])
 def read_tournament_meta(tournament_id: str, db: Session = Depends(get_db)):
@@ -62,3 +82,8 @@ def read_tournament_meta(tournament_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="No metagame stats found for this tournament")
         
     return stats
+
+@router.get("/formats/")
+def read_all_formats(db: Session = Depends(get_db)):
+    formats = crud.get_all_formats(db)
+    return [{"id": f.id, "name": f.name, "limitless_id": f.limitless_id} for f in formats]

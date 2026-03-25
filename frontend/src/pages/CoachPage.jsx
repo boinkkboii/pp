@@ -2,28 +2,25 @@
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import '../App.css'
+import { useChat } from '../components/Chat/ChatContext';
 import Dashboard from '../components/Dashboard/SynergyChart'
 import { api } from '../services/api'; // <-- IMPORTING THE API SERVICE
 
 function CoachPage() {
-  const [input, setInput] = useState('');
-  const [messages, setMessages] = useState([
-    { role: 'ai', content: "Hello! I am your VGC Coach. What team are we building today?" }
-  ]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [activeCommands, setActiveCommands] = useState([]);
-
+  const { messages, setMessages, input, setInput, isLoading, setIsLoading, activeCommands, setActiveCommands } = useChat();
   const sendMessage = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim()) 
+      return;
 
-    const newMessages = [...messages, { role: 'user', content: input }];
+    const userText = input; 
+    const newMessages = [...messages, { role: 'user', content: userText }];
     setMessages(newMessages);
+    
     setInput('');
     setIsLoading(true);
 
     try {
-      // THE REFACTOR: One clean line replaces the entire fetch block!
       const data = await api.sendChatMessage(input);
       let aiText = data.response;
 
@@ -95,7 +92,7 @@ function CoachPage() {
           ) : (
             // Render a separate chart for every command the AI generated!
             activeCommands.map((cmd, index) => (
-              <div key={index} style={{ height: '400px', backgroundColor: 'white', padding: '15px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+              <div key={index} style={{ height: '100%', backgroundColor: 'white', padding: '15px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
                 <Dashboard chartCommand={cmd} />
               </div>
             ))
