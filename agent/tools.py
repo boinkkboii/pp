@@ -1,7 +1,16 @@
+import os
 import requests
 import logging
+import subprocess
+import json
+from backend.schemas import DamageCalcParams
 
+logging.basicConfig(
+    level=logging.INFO, 
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
+
 BASE_URL = "http://localhost:8000/api"
 
 # =====================================================================
@@ -235,3 +244,71 @@ def get_move_users(move_name: str, format_id: str = None) -> list:
         return response.json()
     except Exception as e:
         return [{"error": str(e)}]
+    
+def calculate_vgc_damage(params: DamageCalcParams) -> str:
+    """
+    Calculates exact Pokemon damage using the Smogon calculator. 
+    Use this whenever the user asks if a move OHKOs, or asks for damage percentages.
+    """
+    
+    # 1. Pydantic safely converts the AI's JSON into a dictionary
+    payload = params.model_dump()
+    
+    # Log the raw inputs from the AI so we can see what it's trying to do
+    logger.info(f"🤖 AI Tool Inputs (Raw):\n{json.dumps(payload, indent=2)}")
+
+    # --- SANITIZE THE AI'S INPUTS ---
+    
+    # A. Strip out the literal word "None" from items and statuses to prevent crashes
+    for key in ["attacker_item", "defender_item", "attacker_status"]:
+        if payload.get(key) and payload[key].strip().lower() == "none":
+            payload[key] = ""
+
+    # B. Translate full stat words into Smogon abbreviations for EVs
+    ev_mapping = {
+        "attack": "atk", 
+        "defense": "def", 
+        "special-attack": "spa", 
+        "spatk": "spa", 
+        "special-defense": "spd", 
+        "spdef": "spd", 
+        "speed": "spe",
+        "hp": "hp"
+    }
+    
+    for side in ["attacker_evs", "defender_evs"]:
+        cleaned_evs = {}
+        if payload.get(side):
+            for stat, value in payload[side].items():
+                stat_lower = stat.lower()
+                # Map to correct abbreviation, keep as is if already correct
+                correct_stat = ev_mapping.get(stat_lower, stat_lower)
+                cleaned_evs[correct_stat] = value
+            payload[side] = cleaned_evs
+
+    # -------------------------------------
+    
+    # 2. Dynamically resolve the path to the Node.js bridge script
+    # This makes it work on any machine (Windows/Linux) without hardcoding "C:\pp"
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    js_path = os.path.join(base_dir, "backend", "damage_calc", "calc_bridge.js")
+
+    try:
+        # 3. Run the Node.js script
+        # Passing arguments as a list to subprocess.run is generally safer than shell=True
+        result = subprocess.run(
+            ["node", js_path, json.dumps(payload)], 
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        logger.info("✅ Damage calculation completed!")
+        return result.stdout.strip()
+        
+    except subprocess.CalledProcessError as e:
+        error_msg = e.stderr.strip()
+        logger.error(f"❌ Smogon Calc Error: {error_msg}")
+        return f"Error running calculator: {error_msg}. Tell the user the calculation failed."
+    except FileNotFoundError:
+        logger.error("❌ Node.js not found or calc_bridge.js is missing!")
+        return "Error: Node.js is not installed or the bridge file is missing."

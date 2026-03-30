@@ -1,7 +1,10 @@
 import logging
 from agent.core import create_vgc_agent
 
-logging.basicConfig(level=logging.INFO, format='%(message)s')
+logging.basicConfig(
+    level=logging.INFO, 
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
 def main():
     print("🤖 Booting up VGC Analyst AI...")

@@ -9,17 +9,11 @@ export default function MetaAnalyticsPage() {
   const [metaStats, setMetaStats] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // State to hold the active filters
   const [activeFormat, setActiveFormat] = useState('');
   const [activeTime, setActiveTime] = useState('');
-
-  // State to hold the dynamic formats from the database
   const [availableFormats, setAvailableFormats] = useState([]);
-  
-  // NEW: State to control the custom format dropdown
   const [isFormatOpen, setIsFormatOpen] = useState(false);
 
-  // Fetch available formats once on mount
   useEffect(() => {
     const fetchFormats = async () => {
       try {
@@ -32,7 +26,6 @@ export default function MetaAnalyticsPage() {
     fetchFormats();
   }, []);
 
-// 1. Fetch tournaments ONLY when the page loads OR a filter changes!
   useEffect(() => {
     const fetchTournaments = async () => {
       setLoading(true);
@@ -49,9 +42,8 @@ export default function MetaAnalyticsPage() {
       }
     };
     fetchTournaments();
-  }, [activeFormat, activeTime]); // <-- selectedTournament REMOVED from here!
+  }, [activeFormat, activeTime]);
 
-  // 1.5 Clear the right-side dashboard ONLY if the current list changes and hides your selection
   useEffect(() => {
     if (selectedTournament && tournaments.length > 0 && !tournaments.find(t => t.id === selectedTournament.id)) {
       setSelectedTournament(null);
@@ -59,7 +51,6 @@ export default function MetaAnalyticsPage() {
     }
   }, [tournaments, selectedTournament]);
 
-  // Fetch specific meta stats using the centralized API
   const handleTournamentClick = async (tournament) => {
     setSelectedTournament(tournament);
     setMetaStats([]); 
@@ -73,92 +64,58 @@ export default function MetaAnalyticsPage() {
   };
 
   return (
-    <div className="analytics-container" style={{ display: 'flex', height: 'calc(100vh - 70px)', overflow: 'hidden', padding: '20px', gap: '20px', boxSizing: 'border-box' }}>
+    <div className="analytics-container">
       
       {/* LEFT COLUMN: Tournament List */}
-      <div className="tournament-list" style={{ width: '30%', backgroundColor: 'white', borderRadius: '8px', padding: '15px', overflowY: 'auto', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-        <h2 style={{ borderBottom: '2px solid #1a237e', paddingBottom: '10px', marginBottom: '15px', color: '#1a237e' }}>
-          Recent Events
-        </h2>
+      <div className="tournament-sidebar">
+        <h2 className="card-title">Recent Events</h2>
         
-        {/* THE FILTER CONTROLS */}
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', paddingBottom: '15px', borderBottom: '2px solid #f0f2f5', height: '50px' }}>
-          
-          {/* CUSTOM FORMAT DROPDOWN */}
+        <div className="filter-row">
           <div style={{ position: 'relative', flex: 1 }}>
-            
-            {/* The clickable box */}
             <div 
+              className="custom-select"
               onClick={() => setIsFormatOpen(!isFormatOpen)}
-              style={{ 
-                padding: '0 12px', 
-                borderRadius: '4px', 
-                border: '1px solid #ccc', 
-                fontSize: '0.9rem', 
-                backgroundColor: 'white', 
-                cursor: 'pointer', 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center',
-                height: '100%',
-                boxSizing: 'border-box'
-              }}
+              style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
             >
               <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {activeFormat || "All Formats"}
               </span>
-              <span style={{ fontSize: '0.7rem', color: '#666', marginLeft: '5px' }}>▼</span>
+              <span style={{ fontSize: '0.7rem', opacity: 0.6 }}>▼</span>
             </div>
 
-            {/* The floating menu list */}
             {isFormatOpen && (
-              <ul style={{ 
+              <ul className="card" style={{ 
                 position: 'absolute', 
                 top: '100%', 
                 left: 0, 
                 right: 0, 
-                backgroundColor: 'white', 
-                border: '1px solid #ccc', 
-                borderRadius: '4px', 
                 marginTop: '4px', 
                 padding: 0, 
-                margin: 0,
-                listStyle: 'none', 
                 zIndex: 10,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                maxHeight: '175px', // Approx 5 items height
-                overflowY: 'auto' 
+                maxHeight: '200px',
+                overflowY: 'auto'
               }}>
                 <li 
                   onClick={() => { setActiveFormat(''); setIsFormatOpen(false); }}
+                  className="list-item"
                   style={{ 
                     padding: '8px 12px', 
-                    cursor: 'pointer', 
-                    borderBottom: '1px solid #eee', 
-                    fontSize: '0.9rem',
-                    backgroundColor: activeFormat === '' ? '#e8eaf6' : 'white',
-                    fontWeight: activeFormat === '' ? 'bold' : 'normal'
+                    cursor: 'pointer',
+                    background: activeFormat === '' ? 'var(--bg-color)' : 'transparent'
                   }}
-                  onMouseEnter={(e) => { if(activeFormat !== '') e.target.style.backgroundColor = '#f0f2f5'; }}
-                  onMouseLeave={(e) => { if(activeFormat !== '') e.target.style.backgroundColor = 'white'; }}
                 >
                   All Formats
                 </li>
-                
                 {availableFormats.map((f) => (
                   <li 
                     key={f.id} 
                     onClick={() => { setActiveFormat(f.name); setIsFormatOpen(false); }}
+                    className="list-item"
                     style={{ 
                       padding: '8px 12px', 
-                      cursor: 'pointer', 
-                      borderBottom: '1px solid #eee', 
-                      fontSize: '0.9rem',
-                      backgroundColor: activeFormat === f.name ? '#e8eaf6' : 'white',
-                      fontWeight: activeFormat === f.name ? 'bold' : 'normal'
+                      cursor: 'pointer',
+                      background: activeFormat === f.name ? 'var(--bg-color)' : 'transparent'
                     }}
-                    onMouseEnter={(e) => { if(activeFormat !== f.name) e.target.style.backgroundColor = '#f0f2f5'; }}
-                    onMouseLeave={(e) => { if(activeFormat !== f.name) e.target.style.backgroundColor = 'white'; }}
                   >
                     {f.name}
                   </li>
@@ -168,9 +125,9 @@ export default function MetaAnalyticsPage() {
           </div>
 
           <select 
+            className="custom-select"
             value={activeTime} 
             onChange={(e) => setActiveTime(e.target.value)}
-            style={{ flex: 1, padding: '0 12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '0.9rem', height: '100%', boxSizing: 'border-box' }}
           >
             <option value="">All Time</option>
             <option value="last_week">Past Week</option>
@@ -180,33 +137,23 @@ export default function MetaAnalyticsPage() {
           </select>
         </div>
         
-        {/* THE TOURNAMENT LIST OR EMPTY STATE */}
-        <div style={{ flexGrow: 1, overflowY: 'auto' }}>
+        <div style={{ flexGrow: 1, overflowY: 'auto', paddingRight: '5px' }}>
           {loading ? (
-            <p style={{ color: '#666', textAlign: 'center', marginTop: '20px' }}>Loading database...</p>
+            <p className="text-muted" style={{ textAlign: 'center', marginTop: '20px' }}>Loading database...</p>
           ) : tournaments.length === 0 ? (
-            <div style={{ padding: '30px 10px', textAlign: 'center', color: '#666', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px dashed #ccc' }}>
-                <p style={{ margin: 0, fontWeight: '500' }}>No results found.</p>
-                <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem' }}>Try broadening your filters.</p>
+            <div className="placeholder-card" style={{ padding: '20px' }}>
+                <p>No results found.</p>
             </div>
           ) : (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            <ul className="list-unstyled">
               {tournaments.map((t) => (
                 <li 
                   key={t.id} 
                   onClick={() => handleTournamentClick(t)}
-                  style={{ 
-                    padding: '12px', 
-                    marginBottom: '8px', 
-                    backgroundColor: selectedTournament?.id === t.id ? '#e8eaf6' : '#f8f9fa',
-                    borderLeft: selectedTournament?.id === t.id ? '4px solid #1a237e' : '4px solid transparent',
-                    cursor: 'pointer',
-                    borderRadius: '4px',
-                    transition: 'background-color 0.2s'
-                  }}
+                  className={`tournament-item ${selectedTournament?.id === t.id ? 'active' : ''}`}
                 >
-                  <strong style={{ display: 'block', fontSize: '1rem', color: '#333' }}>{t.name}</strong>
-                  <span style={{ fontSize: '0.85rem', color: '#666' }}>
+                  <strong style={{ display: 'block', fontSize: '0.95rem' }}>{t.name}</strong>
+                  <span className="text-muted">
                     {new Date(t.date).toLocaleDateString()} • {t.format?.name || t.format}
                   </span>
                 </li>
@@ -217,46 +164,52 @@ export default function MetaAnalyticsPage() {
       </div>
 
       {/* RIGHT COLUMN: The Meta Breakdown */}
-      <div className="meta-details" style={{ width: '70%', backgroundColor: 'white', borderRadius: '8px', padding: '20px', overflowY: 'auto', height: '100%', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', boxSizing: 'border-box' }}>
+      <div className="tournament-content">
         {!selectedTournament ? (
-          <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>
-            <h3>Select a tournament from the left to view its metagame data.</h3>
+          <div className="placeholder-card">
+            <h3>Select a tournament to view metagame data.</h3>
           </div>
         ) : (
           <>
-            <h2 style={{ color: '#1a237e', marginBottom: '5px' }}>{selectedTournament.name}</h2>
-            <p style={{ color: '#666', marginBottom: '20px' }}>Players: {selectedTournament.players_count} | Format: {selectedTournament.format?.name || selectedTournament.format}</p>
+            <h2 className="card-title" style={{ border: 'none', marginBottom: '5px' }}>{selectedTournament.name}</h2>
+            <p className="text-muted" style={{ marginBottom: '24px' }}>
+              Players: {selectedTournament.players_count} | Format: {selectedTournament.format?.name || selectedTournament.format}
+            </p>
             
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <table className="data-table">
               <thead>
-                <tr style={{ backgroundColor: '#f0f2f5', borderBottom: '2px solid #ccc' }}>
-                  <th style={{ padding: '12px', width: '60px' }}>Rank</th>
-                  <th style={{ padding: '12px' }}>Pokémon</th>
-                  <th style={{ padding: '12px' }}>Usage %</th>
+                <tr>
+                  <th style={{ width: '60px' }}>Rank</th>
+                  <th>Pokémon</th>
+                  <th style={{ width: '300px' }}>Usage %</th>
                 </tr>
               </thead>
               <tbody>
                 {metaStats.length === 0 ? (
-                  <tr><td colSpan="3" style={{ padding: '20px', textAlign: 'center' }}>Loading stats...</td></tr>
+                  <tr><td colSpan="3" style={{ padding: '40px', textAlign: 'center' }} className="text-muted">Loading stats...</td></tr>
                 ) : (
                   metaStats.slice(0, 50).map((stat, index) => (
-                    <tr key={stat.id} style={{ borderBottom: '1px solid #eee' }}>
-                      <td style={{ padding: '12px', color: '#666', fontWeight: 'bold' }}>#{index + 1}</td>
-                      
-                      <td style={{ padding: '12px', fontWeight: '500' }}>
-                        {stat.species.name}
+                    <tr key={stat.id}>
+                      <td style={{ fontWeight: 'bold' }}>#{index + 1}</td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <img 
+                            src={`https://r2.limitlesstcg.net/sprites/home-sv/${stat.species.limitless_id}.png`} 
+                            alt={stat.species.name}
+                            style={{ width: '40px', height: '40px', objectFit: 'contain' }}
+                            onError={(e) => { e.target.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'; }}
+                          />
+                          <span style={{ fontWeight: '600' }}>{stat.species.name}</span>
+                        </div>
                       </td>
-
-                      <td style={{ padding: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <span style={{ width: '50px' }}>{stat.usage_share_pct.toFixed(2)}%</span>
-                          <div style={{ flexGrow: 1, backgroundColor: '#e0e0e0', height: '8px', borderRadius: '4px' }}>
-                            <div style={{ 
-                              width: `${stat.usage_share_pct}%`, 
-                              backgroundColor: '#ffb300', 
-                              height: '100%', 
-                              borderRadius: '4px' 
-                            }}></div>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <span className="stat-value" style={{ width: '55px' }}>{stat.usage_share_pct.toFixed(1)}%</span>
+                          <div className="progress-bar">
+                            <div 
+                              className="progress-fill"
+                              style={{ width: `${stat.usage_share_pct}%` }}
+                            ></div>
                           </div>
                         </div>
                       </td>

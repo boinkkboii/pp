@@ -1,9 +1,12 @@
 # backend/routers/chat.py
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from agent.core import create_vgc_agent
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 router = APIRouter(tags=["AI Coach"])
+limiter = Limiter(key_func=get_remote_address)
 
 # Boot up a global instance of your stateful chat session
 # This keeps the memory active while the server is running!
@@ -13,9 +16,10 @@ class ChatRequest(BaseModel):
     message: str
 
 @router.post("/chat")
-def chat_with_ai(request: ChatRequest):
+@limiter.limit("5/minute")
+def chat_with_ai(request: Request, payload: ChatRequest):
     try:
-        response = vgc_coach.send_message(request.message)
+        response = vgc_coach.send_message(payload.message)
         return {"response": response.text}
     except Exception as e:
         # Convert the error to a lowercase string so we can inspect it

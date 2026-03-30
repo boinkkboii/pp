@@ -1,24 +1,51 @@
-// src/components/Layout/Navbar.jsx
-import { Link } from 'react-router-dom';
+// src/components/Layout/NavBar.jsx
+import { Link, useLocation } from 'react-router-dom';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function Navbar() {
+  const { theme, toggleTheme } = useTheme();
+  const location = useLocation();
+
+  const isActive = (path) => location.pathname === path;
+
   return (
-    <nav style={{
-      display: 'flex',
-      alignItems: 'center',
-      padding: '0 20px',
-      height: '60px',
-      backgroundColor: '#12185b',
-      color: 'white',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-    }}>
-      <h1 style={{ fontSize: '1.2rem', marginRight: '40px' }}>
-        <Link to="/" style={{ color: 'white', textDecoration: 'none', fontWeight: '500' }}>VGC Limitless AI</Link>
-      </h1>
-      
-      <div style={{ display: 'flex', gap: '20px' }}>
-        <Link to="/coach" style={{ color: 'white', textDecoration: 'none', fontWeight: '500' }}>Coach</Link>
-        <Link to="/meta" style={{ color: 'white', textDecoration: 'none', fontWeight: '500' }}>Meta Analytics</Link>
+    <nav className="navbar">
+      <div className="nav-left">
+        <div className="nav-brand">
+          <Link to="/">PRO GAME ANALYTICS</Link>
+        </div>
+        
+        <div className="nav-links">
+          <Link 
+            to="/coach" 
+            className={`nav-link ${isActive('/coach') ? 'active' : ''}`}
+          >
+            Coach
+          </Link>
+          <Link 
+            to="/meta" 
+            className={`nav-link ${isActive('/meta') ? 'active' : ''}`}
+          >
+            Meta Analytics
+          </Link>
+          <Link 
+            to="/team" 
+            className={`nav-link ${isActive('/team') ? 'active' : ''}`}
+          >
+            Teambuilder
+          </Link>
+        </div>
+      </div>
+
+      <div className="theme-toggle">
+        <label className="switch">
+          <input 
+            type="checkbox" 
+            checked={theme === 'dark'} 
+            onChange={toggleTheme} 
+          />
+          <span className="slider"></span>
+        </label>
       </div>
     </nav>
   );

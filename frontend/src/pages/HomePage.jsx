@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import homePageVideo from '../assets/homepage_video.gif';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -13,7 +14,6 @@ export default function HomePage() {
     const fetchHomeData = async () => {
       setLoading(true);
       try {
-        // Fetch tournaments AND homepage meta concurrently
         const [tournamentsData, metaData] = await Promise.all([
           api.getAllTournaments({ limit: 5 }),
           api.getLatestMeta()
@@ -31,73 +31,75 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div style={{ padding: '20px', overflowY: 'auto', height: 'calc(100vh - 70px)', boxSizing: 'border-box', backgroundColor: '#f0f2f5' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="container" style={{ padding: '20px 0' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
-        {/* =========================================
-            HERO SECTION: Video/Animation Placeholder 
-            ========================================= */}
-        <div style={{ 
-          width: '100%', 
-          aspectRatio: '16/9', 
-          maxHeight: '400px', 
-          backgroundColor: '#1a237e', 
-          borderRadius: '12px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.1, backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
-          <div style={{ fontSize: '3rem', marginBottom: '10px' }}>▶️</div>
-          <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold' }}>Animation / Video Placeholder</h1>
-          <p style={{ opacity: 0.8, marginTop: '10px' }}>Your interactive visualizer or welcome video goes here.</p>
+        <div className="hero-section">
+          {/* 
+            VIDEO/ANIMATION INSTRUCTIONS:
+            1. Place your video in 'frontend/src/assets/' (import it at the top)
+            2. OR place it in 'frontend/public/videos/' and update the src below.
+          */}
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline 
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              zIndex: 0
+            }}
+          >
+            {/* Replace "your-video-path.mp4" with your actual local file path */}
+            <source src={homePageVideo}  type="video/gif" />
+          </video>
+
+          <div className="hero-pattern" style={{ zIndex: 1 }}></div>
+          <h1 style={{ margin: 0, fontSize: '2.5rem', zIndex: 2 }}>PRO GAME ANALYTICS</h1>
+          <p style={{ opacity: 0.9, marginTop: '10px', fontSize: '1.2rem', zIndex: 2 }}>
+            Master the Meta with AI-Powered Insights
+          </p>
+          <div style={{ marginTop: '20px', display: 'flex', gap: '12px', zIndex: 2 }}>
+            <button className="btn-primary" onClick={() => navigate('/coach')}>Start Coaching</button>
+            <button className="btn-primary" style={{ backgroundColor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)' }} onClick={() => navigate('/team')}>Build a Team</button>
+          </div>
         </div>
 
-        {/* =========================================
-            TWO COLUMN DATA LAYOUT
-            ========================================= */}
-        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
           
-          {/* LEFT COLUMN: Top Pokemon */}
-          <div style={{ flex: '2 1 400px', backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-            <h2 style={{ borderBottom: '2px solid #1a237e', paddingBottom: '10px', marginTop: 0, color: '#1a237e' }}>
-              Top Pokémon (Current Meta)
-            </h2>
+          <div className="card" style={{ flex: '2 1 400px' }}>
+            <h2 className="card-title">Top Pokémon (Current Meta)</h2>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '15px', marginTop: '15px' }}>
+            <div className="grid-cols" style={{ marginTop: '20px' }}>
               {loading ? (
-                <p style={{ color: '#666' }}>Loading Pokémon data...</p>
+                <p>Loading Pokémon data...</p>
               ) : topPokemon.length === 0 ? (
-                <p style={{ color: '#666' }}>No meta data available.</p>
+                <p>No meta data available.</p>
               ) : (
                 topPokemon.map((pkmn, index) => (
-                  <div key={pkmn.id} style={{ display: 'flex', alignItems: 'center', padding: '10px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #eee', transition: 'transform 0.2s', cursor: 'pointer' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
-                    
-                    {/* Rank Number */}
-                    <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#1a237e', width: '30px' }}>
-                      {index + 1}.
+                  <div key={pkmn.id} className="card" style={{ display: 'flex', alignItems: 'center', padding: '12px', background: 'var(--bg-color)', border: 'none' }}>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--primary-color)', width: '25px' }}>
+                      {index + 1}
                     </div>
                     
-                    {/* Official Limitless Sprite! */}
-                    <div style={{ width: '60px', height: '60px', marginRight: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '50px', height: '50px', marginRight: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <img 
                         src={`https://r2.limitlesstcg.net/sprites/home-sv/${pkmn.species.limitless_id}.png`} 
                         alt={pkmn.species.name}
                         style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-                        onError={(e) => { e.target.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'; }} // Fallback if image fails
+                        onError={(e) => { e.target.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'; }}
                       />
                     </div>
                     
-                    {/* Name and Usage */}
-                    <div style={{ flexGrow: 1 }}>
-                      <div style={{ fontWeight: 'bold', color: '#333', fontSize: '1.05rem' }}>{pkmn.species.name}</div>
-                      <div style={{ fontSize: '0.9rem', color: '#666', marginTop: '2px' }}>
-                        <span style={{ fontWeight: 'bold', color: '#1a237e' }}>{pkmn.usage_share_pct.toFixed(2)}%</span> Usage
+                    <div>
+                      <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>{pkmn.species.name}</div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                        <span className="stat-value">{pkmn.usage_share_pct.toFixed(1)}%</span> Usage
                       </div>
                     </div>
                   </div>
@@ -106,25 +108,22 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Recent Tournaments */}
-          <div style={{ flex: '1 1 300px', backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
-            <h2 style={{ borderBottom: '2px solid #1a237e', paddingBottom: '10px', marginTop: 0, color: '#1a237e' }}>
-              Recent Tournaments
-            </h2>
+          <div className="card" style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column' }}>
+            <h2 className="card-title">Recent Tournaments</h2>
             
             <div style={{ flexGrow: 1, marginTop: '10px' }}>
               {loading ? (
-                <p style={{ textAlign: 'center', color: '#666' }}>Loading events...</p>
+                <p style={{ textAlign: 'center' }}>Loading events...</p>
               ) : recentTournaments.length === 0 ? (
-                <p style={{ textAlign: 'center', color: '#666' }}>No recent tournaments found.</p>
+                <p style={{ textAlign: 'center' }}>No recent tournaments found.</p>
               ) : (
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                <ul className="list-unstyled">
                   {recentTournaments.map((t) => (
-                    <li key={t.id} style={{ padding: '15px 0', borderBottom: '1px solid #eee' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '1.05rem', color: '#333', marginBottom: '4px' }}>
+                    <li key={t.id} className="list-item">
+                      <div style={{ fontWeight: 'bold', fontSize: '1rem', marginBottom: '4px' }}>
                         {t.name}
                       </div>
-                      <div style={{ fontSize: '0.85rem', color: '#666', display: 'flex', justifyContent: 'space-between' }}>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
                         <span>{new Date(t.date).toLocaleDateString()}</span>
                         <span>{t.players_count} Players</span>
                       </div>
@@ -134,9 +133,7 @@ export default function HomePage() {
               )}
             </div>
             
-            <button
-                onClick={() => navigate('/meta')}
-                style={{ padding: '10px 20px', backgroundColor: '#1a237e', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginTop: '15px' }}>
+            <button className="btn-primary" onClick={() => navigate('/meta')} style={{ marginTop: '20px', width: '100%' }}>
                 Browse All Tournaments
             </button>
           </div>

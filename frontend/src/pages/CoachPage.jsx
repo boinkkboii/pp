@@ -4,14 +4,14 @@ import ReactMarkdown from 'react-markdown'
 import '../App.css'
 import { useChat } from '../components/Chat/ChatContext';
 import Dashboard from '../components/Dashboard/SynergyChart'
-import { api } from '../services/api'; // <-- IMPORTING THE API SERVICE
+import { api } from '../services/api';
 
 function CoachPage() {
   const { messages, setMessages, input, setInput, isLoading, setIsLoading, activeCommands, setActiveCommands } = useChat();
+
   const sendMessage = async (e) => {
     e.preventDefault();
-    if (!input.trim()) 
-      return;
+    if (!input.trim()) return;
 
     const userText = input; 
     const newMessages = [...messages, { role: 'user', content: userText }];
@@ -35,7 +35,7 @@ function CoachPage() {
 
       setMessages([...newMessages, { role: 'ai', content: aiText }]);
     } catch (error) {
-      console.error(error); // Always good to log the actual error to the console!
+      console.error(error);
       setMessages([...newMessages, { role: 'ai', content: "Error connecting to backend." }]);
     } finally {
       setIsLoading(false);
@@ -43,14 +43,19 @@ function CoachPage() {
   };
 
   return (
-    <div className="app-container">
+    <div className="vgc-container">
       {/* LEFT PANEL: The AI Coach Chat */}
       <div className="chat-panel">
-        <div className="chat-header">
-          <h2>VGC AI Coach</h2>
+        <div className="panel-header">
+          <h2>AI COACH</h2>
         </div>
         
         <div className="chat-history">
+          {messages.length === 0 && (
+            <div className="placeholder-card" style={{ border: 'none', background: 'transparent' }}>
+              <p>Welcome to Pro Game Analytics. I'm your AI Coach. Ask me anything about the current VGC meta or team building!</p>
+            </div>
+          )}
           {messages.map((msg, index) => (
             <div key={index} className={`message-row ${msg.role}`}>
               <div className="message-bubble">
@@ -61,43 +66,48 @@ function CoachPage() {
           {isLoading && (
             <div className="message-row ai">
               <div className="message-bubble typing-indicator">
-                Coach is analyzing the meta...
+                Analyzing the data...
               </div>
             </div>
           )}
         </div>
         
-        <form className="chat-input-form" onSubmit={sendMessage}>
-          <input 
-            type="text" 
-            value={input} 
-            onChange={(e) => setInput(e.target.value)} 
-            placeholder="Ask about the meta, team building, or mechanics..."
-          />
-          <button type="submit" disabled={isLoading}>Send</button>
-        </form>
+        <div className="chat-input-area">
+          <form className="chat-form" onSubmit={sendMessage}>
+            <input 
+              className="chat-input"
+              type="text" 
+              value={input} 
+              onChange={(e) => setInput(e.target.value)} 
+              placeholder="Ask me your questions here"
+            />
+            <button className="chat-send-btn" type="submit" disabled={isLoading}>
+              {isLoading ? "..." : "SEND"}
+            </button>
+          </form>
+        </div>
       </div>
 
       {/* RIGHT PANEL: The Data Dashboard */}
       <div className="data-panel">
-        <div className="dashboard-header">
-          <h2>Data Dashboard</h2>
+        <div className="panel-header">
+          <h2>VISUAL ANALYTICS</h2>
         </div>
-        <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          
-          {activeCommands.length === 0 ? (
-            <div className="placeholder-card">
-              <p>Ask the AI about a tournament meta or a Pokémon's synergy to populate the dashboard!</p>
+        
+        {activeCommands.length === 0 ? (
+          <div className="placeholder-card">
+            <div>
+              <h3>No Active Visuals</h3>
+              <p>Ask about specific synergies or meta trends to see charts here.</p>
             </div>
-          ) : (
-            // Render a separate chart for every command the AI generated!
-            activeCommands.map((cmd, index) => (
-              <div key={index} style={{ height: '100%', backgroundColor: 'white', padding: '15px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                <Dashboard chartCommand={cmd} />
-              </div>
-            ))
-          )}
-        </div>
+          </div>
+        ) : (
+          activeCommands.map((cmd, index) => (
+            <div key={index} className="dashboard-card" style={{ height: 'auto', minHeight: '400px' }}>
+              <Dashboard chartCommand={cmd} />
+            </div>
+          ))
+        )}
       </div>
     </div>
   )

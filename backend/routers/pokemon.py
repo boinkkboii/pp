@@ -40,6 +40,13 @@ def read_common_teammates(species_name: str, format: str = None, db: Session = D
         raise HTTPException(status_code=404, detail="No teammates found or species doesn't exist")
     return results
 
+@router.get("/synergy/{species_name}/build")
+def read_pokemon_standard_build(species_name: str, format: str = None, db: Session = Depends(get_db)):
+    result = crud.get_pokemon_standard_build(db, species_name, format_id=format)
+    if not result:
+        raise HTTPException(status_code=404, detail="Standard build not found for this species")
+    return result
+
 @router.get("/synergy/moves/{move_name}/users")
 def read_move_users(move_name: str, format: str = None, db: Session = Depends(get_db)):
     results = crud.get_move_users(db, move_name, format_id=format)

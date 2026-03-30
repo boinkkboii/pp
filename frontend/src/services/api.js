@@ -63,4 +63,34 @@ export const api = {
   getLatestMeta: () => {
     return fetchWithConfig('/meta/latest');
   },
+
+  // --- Teambuilder ---
+  searchPokemon: (q) => fetchWithConfig(`/teambuilder/search/pokemon?q=${q}`),
+  searchMoves: (q) => fetchWithConfig(`/teambuilder/search/moves?q=${q}`),
+  searchItems: (q) => fetchWithConfig(`/teambuilder/search/items?q=${q}`),
+  searchAbilities: (q) => fetchWithConfig(`/teambuilder/search/abilities?q=${q}`),
+  getSpeciesAbilities: (speciesId) => fetchWithConfig(`/teambuilder/species/${speciesId}/abilities`),
+  
+  getUserTeams: () => fetchWithConfig('/teambuilder/teams'),
+  getUserTeam: (id) => fetchWithConfig(`/teambuilder/teams/${id}`),
+  createUserTeam: (data) => fetchWithConfig('/teambuilder/teams', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+  updateUserTeam: (id, data) => fetchWithConfig(`/teambuilder/teams/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+  deleteUserTeam: (id) => fetchWithConfig(`/teambuilder/teams/${id}`, {
+    method: 'DELETE'
+  }),
+  
+  updateUserTeamPokemon: (pokemonId, updates) => fetchWithConfig(`/teambuilder/pokemon/${pokemonId}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates)
+  }),
+  updateUserTeamPokemonMove: (pokemonId, slot, moveId) => fetchWithConfig(`/teambuilder/pokemon/${pokemonId}/moves/${slot}`, {
+    method: 'PUT',
+    body: JSON.stringify({ move_id: moveId })
+  }),
 };

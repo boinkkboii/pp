@@ -71,7 +71,8 @@ def read_single_tournament(tournament_id: str, db: Session = Depends(get_db)):
 @router.get("/tournaments/{tournament_id}/teams", response_model=List[schemas.TournamentResultBase])
 def read_tournament_teams(tournament_id: str, db: Session = Depends(get_db)):
     """Returns the standings, players, and full teams for a specific tournament."""
-    results = crud.get_
+    results = crud.get_tournament_results(db, limitless_tournament_id=tournament_id)
+    return results
 
 @router.get("/tournaments/{tournament_id}/meta", response_model=List[schemas.TournamentMetagameStatBase])
 def read_tournament_meta(tournament_id: str, db: Session = Depends(get_db)):
