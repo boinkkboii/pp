@@ -3,7 +3,8 @@ import requests
 import time
 import logging
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
-from database import Species, SessionLocal
+from backend.models import Species
+from backend.database import SessionLocal, engine
 from requests.exceptions import RequestException # Tenacity needs to know what errors to catch
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

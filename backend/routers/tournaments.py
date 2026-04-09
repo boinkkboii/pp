@@ -1,8 +1,8 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from database import get_db
-from backend import crud, schemas
+from ..database import get_db
+from .. import crud, schemas
 
 router = APIRouter(tags=["Tournaments & Meta"])
 

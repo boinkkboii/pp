@@ -12,6 +12,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 BASE_URL = "http://localhost:8000/api"
+HEADERS = {"X-API-KEY": os.getenv("VGC_API_KEY")}
 
 # =====================================================================
 # CATEGORY 1: THE ENCYCLOPEDIA (Fact-Checking)
@@ -27,7 +28,7 @@ def get_pokemon_stats(species_name: str) -> dict:
     """
     logger.info(f"🔧 Tool: Fetching stats for {species_name}")
     try:
-        response = requests.get(f"{BASE_URL}/encyclopedia/pokemon/{species_name}")
+        response = requests.get(f"{BASE_URL}/encyclopedia/pokemon/{species_name}", headers=HEADERS)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -43,7 +44,7 @@ def get_move_details(move_name: str) -> dict:
     """
     logger.info(f"🔧 Tool: Fetching move details for {move_name}")
     try:
-        response = requests.get(f"{BASE_URL}/encyclopedia/moves/{move_name}")
+        response = requests.get(f"{BASE_URL}/encyclopedia/moves/{move_name}", headers=HEADERS)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -59,7 +60,7 @@ def get_item_ability_details(name: str, item_or_ability: str) -> dict:
     """
     logger.info(f"🔧 Tool: Fetching {item_or_ability} details for {name}")
     try:
-        response = requests.get(f"{BASE_URL}/encyclopedia/{item_or_ability}s/{name}")
+        response = requests.get(f"{BASE_URL}/encyclopedia/{item_or_ability}s/{name}", headers=HEADERS)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -79,7 +80,7 @@ def get_recent_tournaments(limit: int = 5) -> list:
     """
     logger.info(f"🔧 Tool: Fetching {limit} recent tournaments")
     try:
-        response = requests.get(f"{BASE_URL}/tournaments/?limit={limit}")
+        response = requests.get(f"{BASE_URL}/tournaments/?limit={limit}", headers=HEADERS)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -95,7 +96,7 @@ def search_tournaments(query: str) -> list:
     """
     logger.info(f"🔧 Tool: Searching tournaments for '{query}'")
     try:
-        response = requests.get(f"{BASE_URL}/tournaments/search", params={"q": query})
+        response = requests.get(f"{BASE_URL}/tournaments/search", params={"q": query}, headers=HEADERS)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -110,7 +111,7 @@ def search_player_history(player_name: str) -> list:
     """
     logger.info(f"🔧 Tool: Fetching history for player '{player_name}'")
     try:
-        response = requests.get(f"{BASE_URL}/players/{player_name}/history")
+        response = requests.get(f"{BASE_URL}/players/{player_name}/history", headers=HEADERS)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -129,7 +130,7 @@ def get_tournament_meta(tournament_id: str) -> list:
     """
     logger.info(f"🔧 Tool: Fetching meta stats for tournament {tournament_id}")
     try:
-        response = requests.get(f"{BASE_URL}/tournaments/{tournament_id}/meta")
+        response = requests.get(f"{BASE_URL}/tournaments/{tournament_id}/meta", headers=HEADERS)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -145,7 +146,7 @@ def get_tournament_teams(tournament_id: str) -> list:
     """
     logger.info(f"🔧 Tool: Fetching player teams for tournament {tournament_id}")
     try:
-        response = requests.get(f"{BASE_URL}/tournaments/{tournament_id}/teams")
+        response = requests.get(f"{BASE_URL}/tournaments/{tournament_id}/teams", headers=HEADERS)
         response.raise_for_status()
         data = response.json()
         return data[:25]
@@ -166,7 +167,7 @@ def get_format_meta(format_limitless_id: str) -> list:
     """
     logger.info(f"🔧 Tool: Fetching aggregated meta for format {format_limitless_id}")
     try:
-        response = requests.get(f"{BASE_URL}/formats/{format_limitless_id}/meta")
+        response = requests.get(f"{BASE_URL}/formats/{format_limitless_id}/meta", headers=HEADERS)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -181,7 +182,7 @@ def get_historical_meta(months: int) -> list:
     """
     logger.info(f"🔧 Tool: Fetching historical meta for the last {months} months")
     try:
-        response = requests.get(f"{BASE_URL}/meta/history", params={"months": months})
+        response = requests.get(f"{BASE_URL}/meta/history", params={"months": months}, headers=HEADERS)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -203,7 +204,7 @@ def get_common_teammates(species_name: str, format_id: str = None) -> list:
     logger.info(f"🔧 Tool: Fetching common teammates for {species_name}")
     try:
         params = {"format": format_id} if format_id else {}
-        response = requests.get(f"{BASE_URL}/synergy/{species_name}/teammates", params=params)
+        response = requests.get(f"{BASE_URL}/synergy/{species_name}/teammates", params=params, headers=HEADERS)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -221,7 +222,7 @@ def get_pokemon_standard_build(species_name: str, format_id: str = None) -> dict
     logger.info(f"🔧 Tool: Fetching standard build for {species_name}")
     try:
         params = {"format": format_id} if format_id else {}
-        response = requests.get(f"{BASE_URL}/synergy/{species_name}/build", params=params)
+        response = requests.get(f"{BASE_URL}/synergy/{species_name}/build", params=params, headers=HEADERS)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -239,7 +240,7 @@ def get_move_users(move_name: str, format_id: str = None) -> list:
     logger.info(f"🔧 Tool: Fetching top users of the move {move_name}")
     try:
         params = {"format": format_id} if format_id else {}
-        response = requests.get(f"{BASE_URL}/synergy/moves/{move_name}/users", params=params)
+        response = requests.get(f"{BASE_URL}/synergy/moves/{move_name}/users", params=params, headers=HEADERS)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -288,27 +289,20 @@ def calculate_vgc_damage(params: DamageCalcParams) -> str:
 
     # -------------------------------------
     
-    # 2. Dynamically resolve the path to the Node.js bridge script
-    # This makes it work on any machine (Windows/Linux) without hardcoding "C:\pp"
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    js_path = os.path.join(base_dir, "backend", "damage_calc", "calc_bridge.js")
+    # 2. Call the Damage Calculation Microservice
+    # By default it runs on localhost:3001
+    calc_service_url = os.getenv("CALC_SERVICE_URL", "http://localhost:3001/calculate")
 
     try:
-        # 3. Run the Node.js script
-        # Passing arguments as a list to subprocess.run is generally safer than shell=True
-        result = subprocess.run(
-            ["node", js_path, json.dumps(payload)], 
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        logger.info("✅ Damage calculation completed!")
-        return result.stdout.strip()
-        
-    except subprocess.CalledProcessError as e:
-        error_msg = e.stderr.strip()
-        logger.error(f"❌ Smogon Calc Error: {error_msg}")
-        return f"Error running calculator: {error_msg}. Tell the user the calculation failed."
-    except FileNotFoundError:
-        logger.error("❌ Node.js not found or calc_bridge.js is missing!")
-        return "Error: Node.js is not installed or the bridge file is missing."
+        import requests
+        response = requests.post(calc_service_url, json=payload, timeout=10)
+        response.raise_for_status()
+
+        result = response.json()
+        logger.info("✅ Damage calculation completed via microservice!")
+        # Return the description as it's what the AI usually needs
+        return result.get("desc", "Calculation successful but no description returned.")
+
+    except Exception as e:
+        logger.error(f"❌ Damage Calc Service Error: {e}")
+        return f"Error running calculator microservice: {e}. Ensure the service is running on {calc_service_url}."

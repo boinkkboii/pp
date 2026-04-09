@@ -8,8 +8,8 @@ from sqlalchemy import pool
 from alembic import context
 
 sys.path.append(os.getcwd()) # Helps Alembic find your project files
-from database import Base
-from config import Config
+from backend.models import Base
+from backend.core.config import Config
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

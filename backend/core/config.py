@@ -22,4 +22,13 @@ class Config:
         # but we should at least warn or handle it more strictly.
         pass
 
-    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+    # For local dev we might use SQLite, let's make it flexible
+    DATABASE_URL = os.getenv("DATABASE_URL")
+    if not DATABASE_URL:
+        if DB_USER and DB_PASSWORD:
+            SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+        else:
+            # Fallback to local SQLite if no DB credentials provided
+            SQLALCHEMY_DATABASE_URI = "sqlite:///./test_vgc.db"
+    else:
+        SQLALCHEMY_DATABASE_URI = DATABASE_URL

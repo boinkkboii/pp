@@ -4,12 +4,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # Import your custom modules
-from config import Config
+from backend.core.config import Config
 from data_pipeline.scraper import VGCScraper
-from database import (
+from backend.models import (
     Base, Species, Move, Item, Ability, Format, Tournament, 
     Player, Team, TournamentResult, TeamPokemon, TeamPokemonMove, TournamentMetagameStat
 )
+from backend.database import SessionLocal, engine
 
 # --- LOGGING SETUP ---
 logging.basicConfig(
@@ -19,8 +20,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # --- DATABASE SETUP ---
-engine = create_engine(Config.SQLALCHEMY_DATABASE_URI, echo=False)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# (Using SessionLocal and engine imported from backend.database)
 
 def get_or_create(session, model, defaults=None, **kwargs):
     """

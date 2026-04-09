@@ -2,9 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 import httpx
-from backend import crud, schemas
-import database
-from database import get_db
+from .. import crud, schemas, models
+from ..database import get_db
 
 router = APIRouter(prefix="/teambuilder", tags=["teambuilder"])
 
@@ -34,7 +33,7 @@ async def get_species_abilities(species_id: int, db: Session = Depends(get_db)):
         return competitive
     
     # 2. Fallback to PokeAPI
-    db_species = db.query(database.Species).filter(database.Species.id == species_id).first()
+    db_species = db.query(models.Species).filter(models.Species.id == species_id).first()
     if not db_species:
         raise HTTPException(status_code=404, detail="Species not found")
     

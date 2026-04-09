@@ -9,3 +9,9 @@ SQLAlchemy==2.0.23
 pymysql==1.1.0
 slowapi
 httpx
+pytest
+pytest-asyncio
+httpx
+pytest-playwright
+vitest
+jsdom

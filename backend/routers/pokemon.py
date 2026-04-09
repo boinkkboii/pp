@@ -1,8 +1,8 @@
 # backend/routers/pokemon.py
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from database import get_db
-from backend import crud
+from ..database import get_db
+from .. import crud
 
 router = APIRouter(tags=["Pokemon & Synergy"])
 

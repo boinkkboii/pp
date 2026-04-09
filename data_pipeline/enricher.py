@@ -8,8 +8,9 @@ from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_excep
 from requests.exceptions import RequestException
 
 # Import your database configuration and models
-from config import Config
-from database import Base, Move, Item, Ability, SessionLocal, engine
+from backend.core.config import Config
+from backend.models import Base, Move, Item, Ability, Species
+from backend.database import SessionLocal, engine
 
 # --- LOGGING SETUP ---
 logging.basicConfig(

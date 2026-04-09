@@ -9,6 +9,7 @@ async function fetchWithConfig(endpoint, options = {}) {
   const response = await fetch(`${BASE_URL}${endpoint}`, {
     headers: {
       'Content-Type': 'application/json',
+      'X-API-KEY': import.meta.env.VITE_VGC_API_KEY, // Reads from .env
       ...options.headers,
     },
     ...options,

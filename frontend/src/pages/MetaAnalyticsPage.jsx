@@ -154,7 +154,7 @@ export default function MetaAnalyticsPage() {
                 >
                   <strong style={{ display: 'block', fontSize: '0.95rem' }}>{t.name}</strong>
                   <span className="text-muted">
-                    {new Date(t.date).toLocaleDateString()} • {t.format?.name || t.format}
+                    {new Date(t.date).toLocaleDateString()} • {typeof t.format === 'object' ? t.format?.name : t.format}
                   </span>
                 </li>
               ))}
@@ -173,7 +173,7 @@ export default function MetaAnalyticsPage() {
           <>
             <h2 className="card-title" style={{ border: 'none', marginBottom: '5px' }}>{selectedTournament.name}</h2>
             <p className="text-muted" style={{ marginBottom: '24px' }}>
-              Players: {selectedTournament.players_count} | Format: {selectedTournament.format?.name || selectedTournament.format}
+              Players: {selectedTournament.players_count} | Format: {typeof selectedTournament.format === 'object' ? selectedTournament.format?.name : selectedTournament.format}
             </p>
             
             <table className="data-table">

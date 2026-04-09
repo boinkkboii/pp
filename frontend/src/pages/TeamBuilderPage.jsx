@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { api } from '../services/api';
 import '../App.css';
 
-const NATURES = {
+export const NATURES = {
   "Adamant": { plus: "atk", minus: "spa" },
   "Bashful": { plus: null, minus: null },
   "Bold": { plus: "def", minus: "atk" },
@@ -30,7 +30,7 @@ const NATURES = {
   "Timid": { plus: "spe", minus: "atk" }
 };
 
-const calculateStat = (statName, base, ev, iv = 31, level = 50, nature = "Serious") => {
+export const calculateStat = (statName, base, ev, iv = 31, level = 50, nature = "Serious") => {
   if (statName === 'hp') {
     if (base === 1) return 1; // Shedinja
     return Math.floor(((2 * base + iv + Math.floor(ev / 4)) * level) / 100) + level + 10;
