@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import '../App.css';
 
 export const NATURES = {
@@ -45,12 +46,33 @@ export const calculateStat = (statName, base, ev, iv = 31, level = 50, nature = 
   return val;
 };
 
+// Initial template for an empty team (Anonymous use)
+const createEmptyTeam = (name = "Untitled Team") => ({
+  id: Math.random(), // Temporary local ID
+  name: name,
+  pokemons: Array.from({ length: 6 }, (_, i) => ({
+    id: Math.random(),
+    species_id: null,
+    species: null,
+    item_id: null,
+    item: null,
+    ability_id: null,
+    ability: null,
+    level: 50,
+    nature: 'Serious',
+    ev_hp: 0, ev_atk: 0, ev_def: 0, ev_spa: 0, ev_spd: 0, ev_spe: 0,
+    iv_hp: 31, iv_atk: 31, iv_def: 31, iv_spa: 31, iv_spd: 31, iv_spe: 31,
+    moves: Array.from({ length: 4 }, (_, j) => ({ slot: j + 1, move: null, move_id: null }))
+  }))
+});
+
 const TeamBuilderPage = () => {
+  const { user } = useAuth();
   const [view, setView] = useState('list'); // 'list', 'editor'
   const [teams, setTeams] = useState([]);
   const [currentTeam, setCurrentTeam] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [activeSlot, setActiveSlot] = useState(0); // default to 0
+  const [activeSlot, setActiveSlot] = useState(0); 
   const [pickerMode, setPickerMode] = useState(null); 
   const [pickerTarget, setPickerTarget] = useState(null); 
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,6 +82,10 @@ const TeamBuilderPage = () => {
   const [teamToDelete, setTeamToDelete] = useState(null);
 
   const fetchTeams = useCallback(async () => {
+    if (!user) {
+      setTeams([]);
+      return;
+    }
     setLoading(true);
     try {
       const data = await api.getUserTeams();
@@ -69,7 +95,7 @@ const TeamBuilderPage = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchTeams();
@@ -96,6 +122,15 @@ const TeamBuilderPage = () => {
   }, [view, activeSlot, currentTeam]);
 
   const createTeam = async () => {
+    if (!user) {
+      const newTeam = createEmptyTeam("New Team");
+      setTeams([newTeam, ...teams]);
+      setCurrentTeam(newTeam);
+      setView('editor');
+      setActiveSlot(0);
+      return;
+    }
+
     try {
       const newTeam = await api.createUserTeam({ name: "New Team" });
       setTeams([newTeam, ...teams]);
@@ -113,6 +148,17 @@ const TeamBuilderPage = () => {
 
   const confirmDelete = async () => {
     if (!teamToDelete) return;
+
+    if (!user) {
+      setTeams(teams.filter(t => t.id !== teamToDelete.id));
+      setTeamToDelete(null);
+      if (currentTeam?.id === teamToDelete.id) {
+        setView('list');
+        setCurrentTeam(null);
+      }
+      return;
+    }
+
     try {
       await api.deleteUserTeam(teamToDelete.id);
       setTeams(teams.filter(t => t.id !== teamToDelete.id));
@@ -127,6 +173,13 @@ const TeamBuilderPage = () => {
   };
 
   const openEditor = async (team) => {
+    if (!user) {
+      setCurrentTeam(team);
+      setView('editor');
+      setActiveSlot(0);
+      return;
+    }
+
     setLoading(true);
     try {
       const fullTeam = await api.getUserTeam(team.id);
@@ -163,6 +216,29 @@ const TeamBuilderPage = () => {
   const handlePickerSelect = async (item) => {
     const slotIndex = typeof pickerTarget === 'number' ? pickerTarget : pickerTarget.slot;
     const pokemon = currentTeam.pokemons[slotIndex];
+
+    if (!user) {
+      // Local updates only
+      const newPokes = [...currentTeam.pokemons];
+      if (pickerMode === 'pokemon') {
+        newPokes[slotIndex] = { ...newPokes[slotIndex], species_id: item.id, species: item };
+      } else if (pickerMode === 'item') {
+        newPokes[slotIndex] = { ...newPokes[slotIndex], item_id: item.id, item: item };
+      } else if (pickerMode === 'move') {
+        const moveSlot = pickerTarget.moveIndex + 1;
+        const newMoves = [...newPokes[slotIndex].moves];
+        const mIdx = newMoves.findIndex(m => m.slot === moveSlot);
+        if (mIdx !== -1) newMoves[mIdx] = { ...newMoves[mIdx], move: item, move_id: item.id };
+        else newMoves.push({ slot: moveSlot, move: item, move_id: item.id });
+        newPokes[slotIndex] = { ...newPokes[slotIndex], moves: newMoves };
+      }
+      const updatedTeam = { ...currentTeam, pokemons: newPokes };
+      setCurrentTeam(updatedTeam);
+      setTeams(teams.map(t => t.id === currentTeam.id ? updatedTeam : t));
+      closePicker();
+      return;
+    }
+
     try {
       if (pickerMode === 'pokemon') {
         const updated = await api.updateUserTeamPokemon(pokemon.id, { species_id: item.id });
@@ -198,10 +274,20 @@ const TeamBuilderPage = () => {
   const handleAbilityChange = async (e) => {
     const abilityId = parseInt(e.target.value) || null;
     const pokemon = currentTeam.pokemons[activeSlot];
+    const ability = availableAbilities.find(a => a.id === abilityId);
+
+    if (!user) {
+      const newPokes = [...currentTeam.pokemons];
+      newPokes[activeSlot] = { ...newPokes[activeSlot], ability_id: abilityId, ability };
+      const updatedTeam = { ...currentTeam, pokemons: newPokes };
+      setCurrentTeam(updatedTeam);
+      setTeams(teams.map(t => t.id === currentTeam.id ? updatedTeam : t));
+      return;
+    }
+
     try {
       const updated = await api.updateUserTeamPokemon(pokemon.id, { ability_id: abilityId });
       const newPokes = [...currentTeam.pokemons];
-      const ability = availableAbilities.find(a => a.id === abilityId);
       newPokes[activeSlot] = { ...newPokes[activeSlot], ...updated, ability };
       setCurrentTeam({ ...currentTeam, pokemons: newPokes });
     } catch (error) { console.error(error); }
@@ -210,6 +296,16 @@ const TeamBuilderPage = () => {
   const handleNatureChange = async (e) => {
     const nature = e.target.value;
     const pokemon = currentTeam.pokemons[activeSlot];
+
+    if (!user) {
+      const newPokes = [...currentTeam.pokemons];
+      newPokes[activeSlot] = { ...newPokes[activeSlot], nature };
+      const updatedTeam = { ...currentTeam, pokemons: newPokes };
+      setCurrentTeam(updatedTeam);
+      setTeams(teams.map(t => t.id === currentTeam.id ? updatedTeam : t));
+      return;
+    }
+
     try {
       await api.updateUserTeamPokemon(pokemon.id, { nature });
       const newPokes = [...currentTeam.pokemons];
@@ -222,6 +318,16 @@ const TeamBuilderPage = () => {
     let level = parseInt(e.target.value) || 1;
     if (level > 100) level = 100; if (level < 1) level = 1;
     const pokemon = currentTeam.pokemons[activeSlot];
+
+    if (!user) {
+      const newPokes = [...currentTeam.pokemons];
+      newPokes[activeSlot] = { ...newPokes[activeSlot], level };
+      const updatedTeam = { ...currentTeam, pokemons: newPokes };
+      setCurrentTeam(updatedTeam);
+      setTeams(teams.map(t => t.id === currentTeam.id ? updatedTeam : t));
+      return;
+    }
+
     try {
       await api.updateUserTeamPokemon(pokemon.id, { level });
       const newPokes = [...currentTeam.pokemons];
@@ -232,9 +338,10 @@ const TeamBuilderPage = () => {
 
   const updateStats = async (pokemonId, slotIndex, field, value) => {
     let val = parseInt(value) || 0;
+    const pokemon = currentTeam.pokemons[slotIndex];
+
     if (field.startsWith('ev_')) {
       if (val > 252) val = 252; if (val < 0) val = 0;
-      const pokemon = currentTeam.pokemons[slotIndex];
       let otherTotal = 0;
       ['hp', 'atk', 'def', 'spa', 'spd', 'spe'].forEach(s => {
         if (`ev_${s}` !== field) otherTotal += pokemon[`ev_${s}`] || 0;
@@ -243,6 +350,16 @@ const TeamBuilderPage = () => {
     } else if (field.startsWith('iv_')) {
       if (val > 31) val = 31; if (val < 0) val = 0;
     }
+
+    if (!user) {
+      const newPokes = [...currentTeam.pokemons];
+      newPokes[slotIndex] = { ...newPokes[slotIndex], [field]: val };
+      const updatedTeam = { ...currentTeam, pokemons: newPokes };
+      setCurrentTeam(updatedTeam);
+      setTeams(teams.map(t => t.id === currentTeam.id ? updatedTeam : t));
+      return;
+    }
+
     try {
       await api.updateUserTeamPokemon(pokemonId, { [field]: val });
       const newPokes = [...currentTeam.pokemons];
@@ -260,8 +377,22 @@ const TeamBuilderPage = () => {
   const activePokemon = currentTeam?.pokemons?.[activeSlot];
 
   return (
-    <div className="container" style={{ height: 'calc(100vh - var(--header-height) - 60px)', display: 'flex', flexDirection: 'column' }}>
+    <div className="container" style={{ 
+      minHeight: 'calc(100vh - var(--header-height) - 80px)', 
+      display: 'flex', 
+      flexDirection: 'column',
+      paddingBottom: '40px'
+    }}>
       
+      {!user && (
+        <div style={{ 
+          background: 'var(--primary-color)', color: 'white', padding: '12px', 
+          borderRadius: '8px', marginBottom: '20px', textAlign: 'center', fontWeight: 'bold'
+        }}>
+          💡 Anonymous Mode: Teams created will be deleted on refresh. Login to save your progress!
+        </div>
+      )}
+
       {/* 1. VIEW: LIST */}
       {view === 'list' && (
         <>
@@ -326,8 +457,20 @@ const TeamBuilderPage = () => {
       {view === 'editor' && currentTeam && (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-            <button className="btn-primary" style={{ background: 'var(--bg-color)', color: 'var(--text-primary)' }} onClick={() => { fetchTeams(); setView('list'); }}>← Back</button>
-            <input className="chat-input" value={currentTeam.name} onChange={(e) => setCurrentTeam({ ...currentTeam, name: e.target.value })} onBlur={() => api.updateUserTeam(currentTeam.id, { name: currentTeam.name })} style={{ fontSize: '1.2rem', fontWeight: 'bold', border: 'none', background: 'transparent' }} />
+            <button className="btn-primary" style={{ background: 'var(--bg-color)', color: 'var(--text-primary)' }} onClick={() => { if(user) fetchTeams(); setView('list'); }}>← Back</button>
+            <input 
+              className="chat-input" 
+              value={currentTeam.name} 
+              onChange={(e) => {
+                const updated = { ...currentTeam, name: e.target.value };
+                setCurrentTeam(updated);
+                setTeams(teams.map(t => t.id === currentTeam.id ? updated : t));
+              }} 
+              onBlur={() => {
+                if (user) api.updateUserTeam(currentTeam.id, { name: currentTeam.name });
+              }} 
+              style={{ fontSize: '1.2rem', fontWeight: 'bold', border: 'none', background: 'transparent' }} 
+            />
           </div>
           <div style={{ display: 'flex', gap: '24px', flexGrow: 1, minHeight: 0 }}>
             <div style={{ width: '200px', display: 'flex', flexDirection: 'column', gap: '12px' }}>

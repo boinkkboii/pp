@@ -12,6 +12,7 @@ from agent.tools import (
     get_tournament_meta, 
     get_tournament_teams,
     get_format_meta, 
+    get_all_formats,
     get_historical_meta,
     get_common_teammates, 
     get_pokemon_standard_build, 
@@ -119,6 +120,7 @@ def create_vgc_agent():
         get_tournament_meta, 
         get_tournament_teams,
         get_format_meta, 
+        get_all_formats,
         get_historical_meta,
         get_common_teammates, 
         get_pokemon_standard_build, 
@@ -135,7 +137,7 @@ def create_vgc_agent():
 
     # Start a conversational chat session
     chat = client.chats.create(
-        model="gemini-2.5-flash", # Protected against rate limits!
+        model="gemini-2.5-flash",
         config=config
     )
     

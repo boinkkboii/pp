@@ -173,6 +173,19 @@ def get_format_meta(format_limitless_id: str) -> list:
     except Exception as e:
         return [{"error": str(e)}]
 
+def get_all_formats() -> list:
+    """
+    Retrieves a list of all competitive formats available in the database.
+    Use this to find the correct format ID before calling other format-specific tools.
+    """
+    logger.info("🔧 Tool: Fetching all available formats")
+    try:
+        response = requests.get(f"{BASE_URL}/formats/", headers=HEADERS)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        return [{"error": str(e)}]
+
 def get_historical_meta(months: int) -> list:
     """
     Fetches the aggregated usage statistics for the entire metagame over the last X months.

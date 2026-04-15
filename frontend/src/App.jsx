@@ -1,34 +1,38 @@
-// src/App.jsx
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ChatProvider } from './components/Chat/ChatContext';
-import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Layout/NavBar';
+import HomePage from './pages/HomePage';
 import CoachPage from './pages/CoachPage';
 import MetaAnalyticsPage from './pages/MetaAnalyticsPage';
-import HomePage from './pages/HomePage';
+import TeamBuilderPage from './pages/TeamBuilderPage';
+import ProfilePage from './pages/ProfilePage';
+import { ThemeProvider } from './context/ThemeContext';
+import { AuthProvider } from './context/AuthContext';
+import { ChatProvider } from './components/Chat/ChatContext';
 import './App.css';
-import TeambuilderLayout from './pages/TeamBuilderPage';
 
 function App() {
   return (
-    <ThemeProvider>
-      <ChatProvider>
-        <Router>
-          <div className="app-root">
-            <Navbar />
-            
-            <div className="page-content">
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/coach" element={<CoachPage />} />
-                <Route path="/meta" element={<MetaAnalyticsPage />} />
-                <Route path="/team" element={<TeambuilderLayout />} />
-              </Routes>
+    <Router>
+      <AuthProvider>
+        <ThemeProvider>
+          <ChatProvider>
+            <div className="app">
+              <Navbar />
+              <main>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/coach" element={<CoachPage />} />
+                  <Route path="/meta" element={<MetaAnalyticsPage />} />
+                  <Route path="/team" element={<TeamBuilderPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                </Routes>
+              </main>
             </div>
-          </div>
-        </Router>
-      </ChatProvider>
-    </ThemeProvider>
+          </ChatProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

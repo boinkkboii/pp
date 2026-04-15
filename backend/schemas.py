@@ -130,6 +130,33 @@ class TournamentMetagameStatBase(BaseModel):
     class Config:
         from_attributes = True
 
+# --- USER SCHEMAS ---
+
+class UserBase(BaseModel):
+    username: str
+
+class UserCreate(UserBase):
+    password: str
+
+class UserLogin(UserBase):
+    password: str
+
+class UserChangePassword(BaseModel):
+    old_password: str
+    new_password: str
+
+class UserProfile(UserBase):
+    id: int
+    created_at: date
+    class Config: from_attributes = True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
+
 # --- USER TEAM SCHEMAS (NEW) ---
 
 class UserTeamPokemonMoveBase(BaseModel):

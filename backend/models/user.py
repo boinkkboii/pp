@@ -3,12 +3,24 @@ from sqlalchemy.orm import relationship
 from datetime import date
 from .base import Base
 
+class User(Base):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True)
+    username = Column(String(50), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+    created_at = Column(Date, default=date.today)
+    
+    teams = relationship("UserTeam", back_populates="owner")
+
 class UserTeam(Base):
     __tablename__ = 'user_teams'
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False, default="Untitled Team")
     format_id = Column(Integer, ForeignKey('formats.id'), nullable=True)
     created_at = Column(Date, default=date.today)
+    
+    owner_id = Column(Integer, ForeignKey('users.id'), nullable=True) # Nullable for anonymous teams
+    owner = relationship("User", back_populates="teams")
     
     format = relationship("Format")
     pokemons = relationship("UserTeamPokemon", back_populates="team", cascade="all, delete-orphan")

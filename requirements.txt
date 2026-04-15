@@ -11,7 +11,9 @@ slowapi
 httpx
 pytest
 pytest-asyncio
-httpx
 pytest-playwright
 vitest
 jsdom
+uvicorn
+alembic
+python-dotenv
