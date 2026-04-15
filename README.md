@@ -1,8 +1,8 @@
-# VGC Analyst 🏆
+# VGC Analyst
 
 VGC Analyst is a comprehensive analytics platform for Pokémon VGC (Video Game Championships). It combines real-time tournament data, a sophisticated teambuilder with synergy analysis, a damage calculation microservice, and an AI-powered strategic advisor.
 
-## 🌟 Features
+## Features
 
 - **Tournament Insights**: Track and analyze recent VGC tournament results.
 - **Teambuilder**: Build your competitive team with built-in synergy charts and meta-analysis.
@@ -12,7 +12,7 @@ VGC Analyst is a comprehensive analytics platform for Pokémon VGC (Video Game C
 
 ---
 
-## 🚀 Getting Started (Beginner Friendly)
+## Getting Started
 
 This guide is designed for someone who has just cloned the repository and may not have a background in software development. Follow these steps in order.
 
@@ -68,18 +68,18 @@ You need to install three main tools on your computer:
 Before running the app, you need to set up the tables and add some data.
 
 1.  **Run Database Migrations** (Creates the tables):
-    
+    ```bash
     alembic revision --autogenerate
     alembic upgrade head
-
+    ```
 2.  **Seed Pokemon Data** (Populates the database with initial Pokémon data):
-    
+    ```bash
     python -m data_pipeline.seeder
-
+    ```
 3.  **Seed Tournament Data** (Populates the database with tournament data):
-    
+    ```bash
     python -m data_pipeline.main
-    
+    ```
 ---
 
 ### 4. Running the Application
@@ -116,10 +116,10 @@ The website will now be available at **`http://localhost:5173`**. Open this in y
 - **AI**: Google Gemini Pro (via `google-genai`).
 - **Calc Engine**: Node.js microservice.
 
-## 🤝 Contributing
+## Contributing
 
 This project is a work in progress. Feel free to open issues or submit pull requests to improve the VGC meta-analysis tools!
 
-## 📜 License
+## License
 
 This project is licensed under the MIT License - see the `LICENSE` file for details.
