@@ -1,12 +1,9 @@
 // src/context/ChatContext.jsx
 import { createContext, useState, useContext } from 'react';
 
-// Create the memory bank
 const ChatContext = createContext();
 
-// Create the provider that wraps around your app
 export const ChatProvider = ({ children }) => {
-  // Move your Coach states here!
   const [messages, setMessages] = useState([
     { role: 'ai', content: "Hello! I am your VGC Coach. How can I help you today?" }
   ]);  
@@ -21,5 +18,4 @@ export const ChatProvider = ({ children }) => {
   );
 };
 
-// Create a custom hook to easily grab this memory
 export const useChat = () => useContext(ChatContext);

@@ -1,8 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Russo+One&display=swap');
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 :root {
   /* Common variables */
   --header-height: 64px;
+  --container-max-width: 1400px;
+  --container-padding: 32px;
   --font-heading: 'Russo One', sans-serif;
   --font-body: 'Chakra Petch', sans-serif;
   
@@ -38,6 +44,10 @@
   --nav-bg: #1E293B;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   font-family: var(--font-body);
@@ -45,6 +55,11 @@ body {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+body.no-scroll {
+  overflow-y: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -56,14 +71,12 @@ h1, h2, h3, h4, h5, h6 {
 .app-root {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 .page-content {
   flex-grow: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 20px;
+  padding: 20px 0;
 }
 
 .vgc-container {
@@ -71,8 +84,11 @@ h1, h2, h3, h4, h5, h6 {
   grid-template-columns: 650px 1fr;
   gap: 24px;
   height: calc(100vh - var(--header-height) - 40px);
-  max-width: 1600px;
+  max-width: var(--container-max-width);
   margin: 0 auto;
+  width: 100%;
+  padding: 0 var(--container-padding);
+  box-sizing: border-box;
 }
 
 /* Navigation */
@@ -83,11 +99,22 @@ h1, h2, h3, h4, h5, h6 {
   color: white;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 40px;
   box-shadow: var(--shadow-md);
   z-index: 100;
   transition: background-color 0.3s ease;
+  width: 100%;
+  position: sticky;
+  top: 0;
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
 }
 
 .nav-left {
@@ -326,10 +353,10 @@ input:checked + .slider:before {
 
 /* Common Components */
 .container {
-  max-width: 1400px;
+  max-width: var(--container-max-width);
   margin: 20px auto;
   width: 100%;
-  padding: 0 20px;
+  padding: 0 var(--container-padding);
 }
 
 .card {
@@ -434,8 +461,11 @@ input:checked + .slider:before {
   height: calc(100vh - var(--header-height) - 40px);
   overflow: hidden;
   gap: 24px;
-  max-width: 1600px;
+  max-width: var(--container-max-width);
   margin: 0 auto;
+  width: 100%;
+  padding: 0 var(--container-padding);
+  box-sizing: border-box;
 }
 
 .tournament-sidebar {

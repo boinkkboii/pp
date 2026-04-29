@@ -31,37 +31,52 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="container" style={{ padding: '20px 0' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="container">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingTop: '20px', paddingBottom: '20px' }}>
         
         <div className="hero-section">
-          {/* 
-            VIDEO/ANIMATION INSTRUCTIONS:
-            1. Place your video in 'frontend/src/assets/' (import it at the top)
-            2. OR place it in 'frontend/public/videos/' and update the src below.
-          */}
-          <video 
-            autoPlay 
-            loop 
-            muted 
-            playsInline 
+          <img 
+            src={homePageVideo} 
+            alt="Hero Background"
             style={{
               position: 'absolute',
               top: 0,
               left: 0,
               width: '100%',
               height: '100%',
-              objectFit: 'cover',
+              objectFit: 'contain',
               zIndex: 0
             }}
-          >
-            {/* Replace "your-video-path.mp4" with your actual local file path */}
-            <source src={homePageVideo}  type="video/gif" />
-          </video>
+          />
 
           <div className="hero-pattern" style={{ zIndex: 1 }}></div>
-          <h1 style={{ margin: 0, fontSize: '2.5rem', zIndex: 2 }}>PRO GAME ANALYTICS</h1>
-          <p style={{ opacity: 0.9, marginTop: '10px', fontSize: '1.2rem', zIndex: 2 }}>
+          
+          {/* Dark Overlay for legibility */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6))',
+            zIndex: 1
+          }}></div>
+
+          <h1 style={{ 
+            margin: 0, 
+            fontSize: '2.5rem', 
+            zIndex: 2,
+            textShadow: '0 2px 10px rgba(0,0,0,0.5)' 
+          }}>
+            VGC ANALYTICS
+          </h1>
+          <p style={{ 
+            opacity: 0.9, 
+            marginTop: '10px', 
+            fontSize: '1.2rem', 
+            zIndex: 2,
+            textShadow: '0 1px 5px rgba(0,0,0,0.5)'
+          }}>
             Master the Meta with AI-Powered Insights
           </p>
           <div style={{ marginTop: '20px', display: 'flex', gap: '12px', zIndex: 2 }}>

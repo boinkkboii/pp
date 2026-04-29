@@ -151,7 +151,7 @@ def get_tournament_teams(tournament_id: str) -> list:
         data = response.json()
         return data[:25]
     except Exception as e:
-        return [{"error": str(e)}]
+        return {"error": str(e)}
 
 # =====================================================================
 # CATEGORY 4: MACRO ANALYSIS (Time & Format Aggregation)

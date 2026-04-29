@@ -1,5 +1,5 @@
 // src/pages/CoachPage.jsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import '../App.css'
 import { useChat } from '../components/Chat/ChatContext';
@@ -8,6 +8,13 @@ import { api } from '../services/api';
 
 function CoachPage() {
   const { messages, setMessages, input, setInput, isLoading, setIsLoading, activeCommands, setActiveCommands } = useChat();
+
+  useEffect(() => {
+    document.body.classList.add('no-scroll');
+    return () => {
+      document.body.classList.remove('no-scroll');
+    };
+  }, []);
 
   const sendMessage = async (e) => {
     e.preventDefault();

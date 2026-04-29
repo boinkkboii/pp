@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator, model_validator
 from typing import List, Optional, Dict
 from datetime import date
 
@@ -136,14 +136,14 @@ class UserBase(BaseModel):
     username: str
 
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(..., min_length=8)
 
 class UserLogin(UserBase):
     password: str
 
 class UserChangePassword(BaseModel):
     old_password: str
-    new_password: str
+    new_password: str = Field(..., min_length=8)
 
 class UserProfile(UserBase):
     id: int
@@ -192,6 +192,20 @@ class UserTeamPokemonBase(BaseModel):
     ability: Optional[AbilityBase] = None
     moves: List[UserTeamPokemonMoveBase] = []
     
+    @validator("ev_hp", "ev_atk", "ev_def", "ev_spa", "ev_spd", "ev_spe")
+    def validate_single_ev(cls, v):
+        if not (0 <= v <= 252):
+            raise ValueError("Single stat EV must be between 0 and 252")
+        return v
+
+    @model_validator(mode='after')
+    def validate_total_evs(self) -> 'UserTeamPokemonBase':
+        ev_fields = ["ev_hp", "ev_atk", "ev_def", "ev_spa", "ev_spd", "ev_spe"]
+        total = sum(getattr(self, f, 0) for f in ev_fields)
+        if total > 510:
+            raise ValueError(f"Total EVs cannot exceed 510. Got {total}")
+        return self
+
     class Config: from_attributes = True
 
 class UserTeamBase(BaseModel):
@@ -230,6 +244,12 @@ class UserTeamPokemonUpdate(BaseModel):
     iv_spa: Optional[int] = None
     iv_spd: Optional[int] = None
     iv_spe: Optional[int] = None
+
+    @validator("ev_hp", "ev_atk", "ev_def", "ev_spa", "ev_spd", "ev_spe")
+    def validate_single_ev(cls, v):
+        if v is not None and not (0 <= v <= 252):
+            raise ValueError("Single stat EV must be between 0 and 252")
+        return v
 
 class UserTeamPokemonMoveUpdate(BaseModel):
     move_id: Optional[int] = None

@@ -484,12 +484,12 @@ const TeamBuilderPage = () => {
             <div className="card" style={{ flexGrow: 1, padding: '24px', overflowY: 'auto' }}>
               {activePokemon && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: '15px', alignItems: 'end' }}>
-                    <div onClick={() => { setPickerMode('pokemon'); setPickerTarget(activeSlot); }} style={{ cursor: 'pointer' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '15px', alignItems: 'end' }}>
+                    <div onClick={() => { setPickerMode('pokemon'); setPickerTarget(activeSlot); }} style={{ cursor: 'pointer', flex: '2 1 200px' }}>
                       <label className="text-muted">Pokémon</label>
                       <div className="chat-input">{activePokemon.species?.name || "Select Pokémon"}</div>
                     </div>
-                    <div><label className="text-muted">Level</label><input type="number" className="chat-input" value={activePokemon.level} onChange={handleLevelChange} min="1" max="100" /></div>
+                    <div style={{ minWidth: '80px' }}><label className="text-muted">Level</label><input type="number" className="chat-input" value={activePokemon.level} onChange={handleLevelChange} min="1" max="100" /></div>
                     <div onClick={() => { setPickerMode('item'); setPickerTarget(activeSlot); }} style={{ cursor: 'pointer' }}><label className="text-muted">Item</label><div className="chat-input">{activePokemon.item?.name || "No Item"}</div></div>
                     <div><label className="text-muted">Ability</label><select className="custom-select" style={{ width: '100%', height: '45px' }} value={activePokemon.ability_id || ""} onChange={handleAbilityChange} disabled={!activePokemon.species_id}><option value="" disabled>Select Ability</option>{availableAbilities.map(a => (<option key={a.id} value={a.id}>{a.name}</option>))}</select></div>
                     <div><label className="text-muted">Nature</label><select className="custom-select" style={{ width: '100%', height: '45px' }} value={activePokemon.nature} onChange={handleNatureChange}>{Object.keys(NATURES).map(n => (<option key={n} value={n}>{n}</option>))}</select></div>

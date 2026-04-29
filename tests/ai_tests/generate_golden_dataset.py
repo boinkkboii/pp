@@ -1,0 +1,42 @@
+import json
+
+golden_dataset = [
+    {
+        "id": 1,
+        "prompt": "What are the common teammates for Miraidon in Regulation G?",
+        "tool_call": "get_common_teammates(species_name='Miraidon', format_id='RegG')",
+        "expected_entities": ["Miraidon", "RegG"],
+        "ground_truth_context": "Miraidon is often paired with Flutter Mane, Iron Hands, and Chien-Pao in RegG."
+    },
+    {
+        "id": 2,
+        "prompt": "Does a Choice Band Urshifu-Rapid Strike OHKO a 252 HP Incineroar with Surging Strikes?",
+        "tool_call": "calculate_vgc_damage(...)",
+        "expected_entities": ["Urshifu-Rapid", "Incineroar", "Surging Strikes"],
+        "ground_truth_context": "Damage should be calculated based on standard bulk stats for Incineroar."
+    },
+    {
+        "id": 3,
+        "prompt": "Who are the top players and their teams from the last Orlando regional?",
+        "tool_call": "search_tournaments(query='Orlando')",
+        "expected_entities": ["Orlando", "regional"],
+        "ground_truth_context": "The AI should find the tournament ID for Orlando then call get_tournament_teams."
+    },
+    {
+        "id": 4,
+        "prompt": "What is the standard build for Flutter Mane?",
+        "tool_call": "get_pokemon_standard_build(species_name='Flutter Mane')",
+        "expected_entities": ["Flutter Mane"],
+        "ground_truth_context": "Flutter Mane usually runs Booster Energy, Dazzling Gleam, Moonblast, Shadow Ball, Protect."
+    },
+    {
+        "id": 5,
+        "prompt": "What is the typing of Iron Bundle?",
+        "tool_call": "get_pokemon_stats(species_name='Iron Bundle')",
+        "expected_entities": ["Iron Bundle"],
+        "ground_truth_context": "Iron Bundle is Ice/Water."
+    }
+]
+
+with open('golden_dataset.json', 'w') as f:
+    json.dump(golden_dataset, f, indent=4)

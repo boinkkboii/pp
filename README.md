@@ -108,6 +108,25 @@ The website will now be available at **`http://localhost:5173`**. Open this in y
 
 ---
 
+## Testing
+
+VGC Analyst includes a comprehensive test suite covering the backend API, AI behavior, and frontend logic.
+
+### Running Backend Tests (Python)
+Ensure your virtual environment is activated, then run:
+```bash
+pytest tests/unit_tests tests/integration_tests
+```
+*Note: Backend tests use an isolated SQLite database (`test_vgc.db`) and mock external API calls, so they won't affect your production data or Gemini quota.*
+
+### Running Frontend Tests (Vitest)
+Navigate to the frontend directory and run:
+```bash
+npx vitest run
+```
+
+---
+
 ## 🛠 Tech Stack
 
 - **Frontend**: React 19, Vite, Recharts, React Router.

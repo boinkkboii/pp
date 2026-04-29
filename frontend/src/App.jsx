@@ -17,9 +17,9 @@ function App() {
       <AuthProvider>
         <ThemeProvider>
           <ChatProvider>
-            <div className="app">
+            <div className="app-root">
               <Navbar />
-              <main>
+              <main className="page-content">
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/coach" element={<CoachPage />} />

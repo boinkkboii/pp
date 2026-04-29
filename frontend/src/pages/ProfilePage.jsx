@@ -27,6 +27,11 @@ const ProfilePage = () => {
       return;
     }
 
+    if (newPassword.length < 8) {
+      setError("New password must be at least 8 characters long");
+      return;
+    }
+
     setLoading(true);
     try {
       await api.changePassword(oldPassword, newPassword);
