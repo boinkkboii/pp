@@ -115,7 +115,7 @@ VGC Analyst includes a comprehensive test suite covering the backend API, AI beh
 ### Running Backend Tests (Python)
 Ensure your virtual environment is activated, then run:
 ```bash
-pytest tests/unit_tests tests/integration_tests
+python.exe -m pytest --cov=.
 ```
 *Note: Backend tests use an isolated SQLite database (`test_vgc.db`) and mock external API calls, so they won't affect your production data or Gemini quota.*
 

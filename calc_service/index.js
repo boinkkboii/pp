@@ -59,4 +59,10 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok' });
 });
 
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Damage Calculation Service running on port ${PORT}`);
+    });
+}
+
 module.exports = { app, calculate };

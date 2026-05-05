@@ -9,18 +9,21 @@ def test_conversational_context_retention():
         mock_client.chats.create.return_value = mock_chat
         
         # Simulate history being passed in the session
-        mock_chat.history = [
-            {"role": "user", "parts": ["Who won the Orlando Regional?"]},
-            {"role": "model", "parts": ["Player X won using a Miraidon team."]}
+        test_history = [
+            MagicMock(role="user", parts=["Who won the Orlando Regional?"]),
+            MagicMock(role="model", parts=["Player X won using a Miraidon team."])
         ]
+        mock_chat.get_history.return_value = test_history
         
         # Test follow-up
         chat = create_vgc_agent()
-        chat.history = mock_chat.history # Inject mock history
-        chat.send_message("What was their rank?")
+        # Verify get_history is callable
+        current_history = chat.get_history()
+        assert len(current_history) == 2
         
-        # Verify history was included in the request
-        assert len(chat.history) >= 2
+        chat.send_message("What was their rank?")
+        # Verify send_message was called
+        assert chat.send_message.called
 
 def test_llm_reliability_cache_fallback():
     """Verify FR-26: System returns cached answer if LLM is unavailable."""

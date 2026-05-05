@@ -5,14 +5,14 @@ golden_dataset = [
         "id": 1,
         "prompt": "What are the common teammates for Miraidon in Regulation G?",
         "tool_call": "get_common_teammates(species_name='Miraidon', format_id='RegG')",
-        "expected_entities": ["Miraidon", "RegG"],
+        "expected_entities": ["Miraidon", "Regulation G"],
         "ground_truth_context": "Miraidon is often paired with Flutter Mane, Iron Hands, and Chien-Pao in RegG."
     },
     {
         "id": 2,
         "prompt": "Does a Choice Band Urshifu-Rapid Strike OHKO a 252 HP Incineroar with Surging Strikes?",
         "tool_call": "calculate_vgc_damage(...)",
-        "expected_entities": ["Urshifu-Rapid", "Incineroar", "Surging Strikes"],
+        "expected_entities": ["Urshifu Rapid Strike", "Incineroar", "Surging Strikes"],
         "ground_truth_context": "Damage should be calculated based on standard bulk stats for Incineroar."
     },
     {

@@ -1,3 +1,5 @@
+import { describe, test, expect } from 'vitest';
+
 const { calculate, Pokemon, Move, Field } = require('@smogon/calc');
 const GEN = 9;
 

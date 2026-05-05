@@ -5,7 +5,7 @@
         "tool_call": "get_common_teammates(species_name='Miraidon', format_id='RegG')",
         "expected_entities": [
             "Miraidon",
-            "RegG"
+            "Regulation G"
         ],
         "ground_truth_context": "Miraidon is often paired with Flutter Mane, Iron Hands, and Chien-Pao in RegG."
     },
@@ -14,7 +14,7 @@
         "prompt": "Does a Choice Band Urshifu-Rapid Strike OHKO a 252 HP Incineroar with Surging Strikes?",
         "tool_call": "calculate_vgc_damage(...)",
         "expected_entities": [
-            "Urshifu-Rapid",
+            "Urshifu Rapid Strike",
             "Incineroar",
             "Surging Strikes"
         ],
